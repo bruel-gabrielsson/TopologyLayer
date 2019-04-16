@@ -43,8 +43,10 @@ import torch
 
 layer = LevelSetLayer((3,3))
 x = torch.tensor([[2, 1, 1],[1, 0.5, 1],[1, 1, 1]], dtype=torch.float)
-dgm = layer(x)
+dgm = layer(x.view(-1))
 ```
+Note that we pass in `x.view(-1)` - this is currently necessary for backpropagation to work.
+
 The above should give
 `dgm[0] = tensor([[2., -inf]])` and `dgm[1] = tensor([[1.0000, 0.5000]])`
 corresponding to the persistence diagrams
