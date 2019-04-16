@@ -29,6 +29,26 @@ cd <path_to_TopologyLayer>/Examples
 python examples.py
 ```
 
+# High-Level Interface
+
+For easiest use, high-level classes are provided for Pytorch compatibility
+
+### LevelSetLayer
+
+A `LevelSetLayer` takes in an image (of fixed dimension), and outputs a super-level set persistence diagram tensor.
+
+```python
+from levelset import LevelSetLayer
+import torch
+
+layer = LevelSetLayer((28,28))
+x = torch.rand(28,28)
+dgm = layer(x)
+```
+
+
+# Lower-Level Information
+
 ## Diagram Basics
 
 The output of a `TopologyLayer` is a `pytorch.tensor` of size `d x ndp x 2` where `d` is the maximum homology dimension, `ndp` is the maximum number of diagram points in any homology dimension, and the remaining index is for birth and death times.  If a homology dimension has fewer than `ndp` pairs, then the remaining indices will be filled with `-1`.
