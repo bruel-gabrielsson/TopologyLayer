@@ -49,6 +49,23 @@ The above should give
 `dgm[0] = tensor([[2., -inf]])` and `dgm[1] = tensor([[1.0000, 0.5000]])`
 corresponding to the persistence diagrams
 
+### SumBarcodeLengths
+
+A `SumBarcodeLengths` layer takes in a persistence diagram tensor, and sums up the lengths of the persistence pairs, ignoring infinite bars, and handling dimension padding
+
+```python
+from levelset import LevelSetLayer
+from features import SumBarcodeLengths
+import torch
+
+layer = LevelSetLayer((28,28), maxdim=1)
+sumlayer = SumBarcodeLengths()
+
+x = torch.rand(28,28)
+dgm = layer(x)
+dlen = sumlayer(dgm)
+```
+
 
 # Lower-Level Information
 
