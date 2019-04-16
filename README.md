@@ -41,10 +41,13 @@ A `LevelSetLayer` takes in an image (of fixed dimension), and outputs a super-le
 from levelset import LevelSetLayer
 import torch
 
-layer = LevelSetLayer((28,28))
-x = torch.rand(28,28)
+layer = LevelSetLayer((3,3))
+x = torch.tensor([[2, 1, 1],[1, 0.5, 1],[1, 1, 1]], dtype=torch.float)
 dgm = layer(x)
 ```
+The above should give
+`dgm[0] = tensor([[2., -inf]])` and `dgm[1] = tensor([[1.0000, 0.5000]])`
+corresponding to the persistence diagrams
 
 
 # Lower-Level Information
