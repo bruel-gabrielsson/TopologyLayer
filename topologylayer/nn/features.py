@@ -30,6 +30,7 @@ def get_raw_barcode_lengths(dgminfo):
     lengths = end - start
     return lengths
 
+
 def get_barcode_lengths(dgminfo):
     """
     get barcode lengths from barcode pairs
@@ -58,6 +59,23 @@ class SumBarcodeLengths(nn.Module):
         return torch.sum(lengths, dim=1)
 
 
+def get_barcode_lengths_means(dgminfo):
+    """
+    return lengths and means of barcode
+
+    set irrelevant or infinite to zero
+    """
+    start, end = get_start_end(dgminfo)
+    lengths = end - start
+    means = (end + start)/2
+    # remove infinite and irrelvant bars
+    means[lengths == np.inf] = 0 # note this depends on lengths
+    means[lengths != lengths] = 0
+    lengths[lengths == np.inf] = 0
+    lengths[lengths != lengths] = 0
+    return lengths, means
+
+
 def pad_k(t, k, pad=0.0):
     """
     zero pad tensor t until dimension along axis is k
@@ -69,7 +87,7 @@ def pad_k(t, k, pad=0.0):
         return t[:k]
     if lt < k:
         fillt = torch.tensor(pad * np.ones(k - lt), dtype=t.dtype)
-        return torch.cat((out, fillt))
+        return torch.cat((t, fillt))
     return t
 
 
@@ -78,12 +96,12 @@ class TopKBarcodeLengths(nn.Module):
     Layer that returns top k lengths of persistence diagram in dimension
 
     inputs:
-        k - number of lengths
         dim - homology dimension
+        k - number of lengths
 
     ignores infinite bars and padding
     """
-    def __init__(self, k, dim):
+    def __init__(self, dim, k):
         super(TopKBarcodeLengths, self).__init__()
         self.k = k
         self.dim = dim
