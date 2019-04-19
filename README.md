@@ -42,7 +42,7 @@ The recommended usage is to just pass `dgminfo` directly into a feature layer, w
 A `LevelSetLayer` takes in an image (of fixed dimension), and outputs a super-level set persistence diagram tensor.
 
 ```python
-from levelset import LevelSetLayer
+from topologylayer.nn.levelset import LevelSetLayer
 import torch
 
 layer = LevelSetLayer((3,3))
@@ -61,7 +61,7 @@ corresponding to the persistence diagrams
 A `RipsLayer` takes in a point cloud, and outputs the persistence diagram of the Rips complex.
 
 ```python
-from rips import RipsLayer
+from topologylayer.nn.rips import RipsLayer
 
 layer = RipsLayer(maxdim=1, rmax=np.inf, verbose=True)
 dgm, issublevelset = layer(x)
@@ -72,8 +72,8 @@ dgm, issublevelset = layer(x)
 A `SumBarcodeLengths` layer takes in a `dgminfo` object, and sums up the lengths of the persistence pairs, ignoring infinite bars, and handling dimension padding
 
 ```python
-from levelset import LevelSetLayer
-from features import SumBarcodeLengths
+from topologylayer.nn.levelset import LevelSetLayer
+from topologylayer.nn.features import SumBarcodeLengths
 import torch
 
 layer = LevelSetLayer((28,28), maxdim=1)

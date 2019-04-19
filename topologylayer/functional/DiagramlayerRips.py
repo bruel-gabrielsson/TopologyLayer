@@ -2,7 +2,7 @@ from __future__ import print_function
 import numpy as np
 import sys
 sys.path.append('../Python')
-import topologicalutilsRIPS as tp
+from ..util.topologicalutilsRIPS import computePersistence
 import dionysus as d
 import time
 import torch
@@ -34,7 +34,7 @@ class Diagramlayer(Function):
         F = d.fill_rips(function_useable, MAX_DIMENSION, SATURATION_VALUE)
         F.sort()
 
-        dgms, Tbl = tp.computePersistence(F)
+        dgms, Tbl = computePersistence(F)
         max_pts = np.max([len(dgms[0]), len(dgms[1]), len(dgms[2])])
         num_dgm_pts = max_pts
         ''' -1 is used later '''

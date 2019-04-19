@@ -2,7 +2,7 @@ from __future__ import print_function
 import numpy as np
 import sys
 sys.path.append('../Python')
-import topologicalutils as tp
+from ..util.topologicalutils import computePersistence
 import dionysus as d
 import time
 import torch
@@ -41,7 +41,7 @@ class Diagramlayer(Function):
         # list of function values on vertices, and maximal dimension it will return 0,1,2,3
         function_useable = function_values.data.numpy().flatten()
 
-        dgms, Tbl = tp.computePersistence(F, -1.0 * function_useable.reshape(1,-1))
+        dgms, Tbl = computePersistence(F, -1.0 * function_useable.reshape(1,-1))
         num_dgm_pts = np.max([len(dgms[0]), len(dgms[1]), len(dgms[2])])
         dgms_inds = -1 * np.ones([3, num_dgm_pts, 2])
         if len(dgms[0]) > 0:

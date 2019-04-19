@@ -1,4 +1,4 @@
-from DiagramlayerTopLevel import Diagramlayer as levelsetdgm
+from ..functional.DiagramlayerTopLevel import Diagramlayer as levelsetdgm
 
 import torch
 import torch.nn as nn

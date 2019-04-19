@@ -1,4 +1,4 @@
-from DiagramlayerRips import Diagramlayer as ripsdgm
+from ..functional.DiagramlayerRips import Diagramlayer as ripsdgm
 import torch
 import torch.nn as nn
 import numpy as np
