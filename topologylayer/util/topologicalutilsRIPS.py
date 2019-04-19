@@ -16,13 +16,12 @@ from collections import defaultdict
 #        Tbl is a dictionary from simplex to vertex (depends on the function)
 def returndgm(m,f,Tbl):
 	dgm = {}
-	dgm[0] = []
-	dgm[1] = []
-	dgm[2] = []
+	for i in range(len(m)-1):
+		dgm[i] = []
     # Tbl is a dictionary from simplex to vertex (depends on the function) / from simplex to two points (three points cause includes value)
     # b_value_i, d_value_i, b_e_b (or -1), b_e_d (or -1), d_e_b (or -1), d_e_d (or -1)
 	#point_index_to_points_indices = defaultdict(lambda: [])
-	for i in range(len(m)):
+	for i in range(len(m)-1):
 		if m.pair(i) < i: continue      # skip negative simplices
 		dim = int(f[i].dimension())
 		pair = m.pair(i) # now an edge

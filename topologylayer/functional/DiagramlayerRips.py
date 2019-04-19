@@ -35,39 +35,21 @@ class Diagramlayer(Function):
         F.sort()
 
         dgms, Tbl = computePersistence(F)
-        max_pts = np.max([len(dgms[0]), len(dgms[1]), len(dgms[2])])
+        max_pts = np.max([len(dgms[i]) for i in xrange(maxdim+1)])
         num_dgm_pts = max_pts
         ''' -1 is used later '''
-        dgms_inds = -1 * np.ones([3, num_dgm_pts, 4])
-        dgms_values = -np.inf * np.ones([3, num_dgm_pts, 2]) # -1.0 * np.ones([3, num_dgm_pts, 2])
-        if len(dgms[0]) > 0:
-            dim = 0
-            dgm = np.array(dgms[dim])
-            dgm[dgm == np.inf] = SATURATION_VALUE
-            l = np.min([num_dgm_pts, len(dgm)])
-            arg_sort = np.argsort(np.abs(dgm[:,1] - dgm[:,0]))[::-1]
-            dgms_inds[dim][:l] = dgm[arg_sort[:l], 2:6]
-            dgms_values[dim][:l] = dgm[arg_sort[:l], 0:2]
-        if len(dgms[1]) > 0:
-            dim = 1
-            dgm = np.array(dgms[dim])
-            dgm[dgm == np.inf] = SATURATION_VALUE
-            l = np.min([num_dgm_pts, len(dgm)])
-            arg_sort = np.argsort(np.abs(dgm[:,1] - dgm[:,0]))[::-1] # TAKE MOST PERSISTENT
-            dgms_inds[dim][:l] = dgm[arg_sort[:l], 2:6]
-            dgms_values[dim][:l] = dgm[arg_sort[:l], 0:2]
+        dgms_inds = -1 * np.ones([maxdim+1, num_dgm_pts, 4])
+        dgms_values = -np.inf * np.ones([maxdim+1, num_dgm_pts, 2]) # -1.0 * np.ones([3, num_dgm_pts, 2])
+        for dim in xrange(maxdim+1):
+            if len(dgms[dim]) > 0:
+                dgm = np.array(dgms[dim])
+                dgm[dgm == np.inf] = SATURATION_VALUE
+                l = np.min([num_dgm_pts, len(dgm)])
+                arg_sort = np.argsort(np.abs(dgm[:,1] - dgm[:,0]))[::-1]
+                dgms_inds[dim][:l] = dgm[arg_sort[:l], 2:6]
+                dgms_values[dim][:l] = dgm[arg_sort[:l], 0:2]
 
-            ''' Dim 2 doesn't seem to work currently '''
-        if False: # len(dgms[2]) > 0:
-            dim = 2
-            dgm = np.array(dgms[dim])
-            dgm[dgm == np.inf] = SATURATION_VALUE
-            l = np.min([num_dgm_pts, len(dgm)])
-            arg_sort = np.argsort(np.abs(dgm[:,1] - dgm[:,0]))[::-1]
-            dgms_inds[dim][:l] = dgm[arg_sort[:l], 2:6]
-            dgms_values[dim][:l] = dgm[arg_sort[:l], 0:2]
-
-        dgms_inds = dgms_inds.reshape([3, num_dgm_pts, 2, 2])
+        dgms_inds = dgms_inds.reshape([maxdim+1, num_dgm_pts, 2, 2])
         #print dgms_values
         #dgms_values[dgms_values == np.inf] = SATURATION_VALUE #-1.0, Won't show up as inifinite, but good enough
         output = torch.tensor(dgms_values).type(dtype)
