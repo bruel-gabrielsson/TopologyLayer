@@ -31,7 +31,11 @@ python examples.py
 
 # High-Level Interface
 
-For easiest use, high-level classes are provided for Pytorch compatibility
+For easiest use, high-level classes are provided for Pytorch compatibility.
+
+The output of the diagram layers is not just a Pytorch tensor, but a `dgminfo` object, which currently consists of the diagram pytorch tensor and a boolean flag indicating the filtration direction, which is necessary for featurization
+
+The recommended usage is to just pass `dgminfo` directly into a feature layer, which will take care of parsing, since the representation may change in the future.
 
 ### LevelSetLayer
 
@@ -43,7 +47,7 @@ import torch
 
 layer = LevelSetLayer((3,3))
 x = torch.tensor([[2, 1, 1],[1, 0.5, 1],[1, 1, 1]], dtype=torch.float)
-dgm = layer(x.view(-1))
+dgm, issublevelset = layer(x.view(-1))
 ```
 Note that we pass in `x.view(-1)` - this is currently necessary for backpropagation to work.
 
@@ -51,9 +55,21 @@ The above should give
 `dgm[0] = tensor([[2., -inf]])` and `dgm[1] = tensor([[1.0000, 0.5000]])`
 corresponding to the persistence diagrams
 
+
+### RipsLayer
+
+A `RipsLayer` takes in a point cloud, and outputs the persistence diagram of the Rips complex.
+
+```python
+from rips import RipsLayer
+
+layer = RipsLayer(maxdim=1, rmax=np.inf, verbose=True)
+dgm, issublevelset = layer(x)
+```
+
 ### SumBarcodeLengths
 
-A `SumBarcodeLengths` layer takes in a persistence diagram tensor, and sums up the lengths of the persistence pairs, ignoring infinite bars, and handling dimension padding
+A `SumBarcodeLengths` layer takes in a `dgminfo` object, and sums up the lengths of the persistence pairs, ignoring infinite bars, and handling dimension padding
 
 ```python
 from levelset import LevelSetLayer
@@ -64,8 +80,8 @@ layer = LevelSetLayer((28,28), maxdim=1)
 sumlayer = SumBarcodeLengths()
 
 x = torch.rand(28,28)
-dgm = layer(x)
-dlen = sumlayer(dgm)
+dgminfo = layer(x)
+dlen = sumlayer(dgminfo)
 ```
 
 

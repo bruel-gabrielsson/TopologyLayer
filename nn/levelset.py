@@ -34,4 +34,4 @@ class LevelSetLayer(nn.Module):
     def forward(self, img):
         dgm = self.fnobj.apply(img, self.complex)
         dgm = dgm[0:(self.maxdim+1),:,:]
-        return dgm
+        return dgm, False

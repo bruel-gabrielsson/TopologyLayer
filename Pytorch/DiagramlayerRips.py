@@ -16,9 +16,9 @@ class Diagramlayer(Function):
     # Note that both forward and backward are @staticmethods
     @staticmethod
     # bias is an optional argument
-    def forward(ctx, x, saturation=None):
-        MAX_DIMENSION = 2 #
-        if PLOT: print("*** dgm start")
+    def forward(ctx, x, saturation=None, maxdim=1, verbose=False):
+        MAX_DIMENSION = maxdim + 1 # maximal simplex dimension
+        if verbose: print("*** dgm start")
         if saturation == None:
             SATURATION_VALUE = 3.1
             print("==== WARNING: NO SATURATION VALUE GIVEN, {}".format(SATURATION_VALUE))
@@ -39,7 +39,7 @@ class Diagramlayer(Function):
         num_dgm_pts = max_pts
         ''' -1 is used later '''
         dgms_inds = -1 * np.ones([3, num_dgm_pts, 4])
-        dgms_values = -1.0 * np.ones([3, num_dgm_pts, 2]) # -np.inf * np.ones([3, num_dgm_pts, 2])
+        dgms_values = -np.inf * np.ones([3, num_dgm_pts, 2]) # -1.0 * np.ones([3, num_dgm_pts, 2])
         if len(dgms[0]) > 0:
             dim = 0
             dgm = np.array(dgms[dim])
@@ -71,8 +71,8 @@ class Diagramlayer(Function):
         #print dgms_values
         #dgms_values[dgms_values == np.inf] = SATURATION_VALUE #-1.0, Won't show up as inifinite, but good enough
         output = torch.tensor(dgms_values).type(dtype)
-        ctx.save_for_backward(x, torch.tensor(dgms_inds).type(dtype), output)
-        if PLOT: print("*** dgm done", time.time() - start_time)
+        ctx.save_for_backward(x, torch.tensor(dgms_inds).type(dtype), output, torch.tensor(verbose))
+        if verbose: print("*** dgm done", time.time() - start_time)
         return output
 
     # This function has only a single output, so it gets only one gradient
@@ -83,9 +83,10 @@ class Diagramlayer(Function):
         # None. Thanks to the fact that additional trailing Nones are
         # ignored, the return statement is simple even when the function has
         # optional inputs.
-        if PLOT: print("*** dgm back")
+        input, dgms_inds, dgms_values, verbose = ctx.saved_variables
+        if verbose: print("*** dgm back")
         start_time = time.time()
-        input, dgms_inds, dgms_values = ctx.saved_variables
+
         points = input.data.numpy()
         output = dgms_values.detach().numpy()
         grad_input = torch.zeros(input.shape).type(dtype)
@@ -122,8 +123,8 @@ class Diagramlayer(Function):
                 grad_output_and_intermediate = (intermediate.transpose() * grad_intermediate[ list(inds_into_grad_output) ]).transpose()
                 update = np.sum( grad_output_and_intermediate.reshape([-1, input.shape[1]]), axis=0 )
                 grad_input[int(index)] = torch.tensor(update).type(dtype)
-        if PLOT: print("*** dgm back done", time.time() - start_time)
-        return grad_input, None
+        if verbose: print("*** dgm back done", time.time() - start_time)
+        return grad_input, None, None, None
 
 if __name__ == "__main__":
     diagramlayer = Diagramlayer.apply
