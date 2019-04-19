@@ -84,6 +84,10 @@ dgminfo = layer(x)
 dlen = sumlayer(dgminfo)
 ```
 
+### TopKBarcodeLengths
+
+A `TopKBarcodeLengths` layer takes in a `dgminfo` object, and returns the top k barcode lengths in a given homology dimension as a tensor, padding by 0 if necessary.
+
 
 # Lower-Level Information
 
