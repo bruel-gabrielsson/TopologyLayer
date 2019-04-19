@@ -86,7 +86,12 @@ dlen = sumlayer(dgminfo)
 
 ### TopKBarcodeLengths
 
-A `TopKBarcodeLengths` layer takes in a `dgminfo` object, and returns the top k barcode lengths in a given homology dimension as a tensor, padding by 0 if necessary.
+A `TopKBarcodeLengths` layer takes in a `dgminfo` object, and returns the top k barcode lengths in a given homology dimension as a tensor, padding by 0 if necessary.  Parameters are `dim` and `k`
+
+
+### BarcodePolyFeature
+
+A `BarcodePolyFeature` layer takes in a `dgminfo` object, and returns a polynomial feature as in Adcock Carlsson and Carlsson.  Parameters are homology dimension `dim`, and exponents `a` and `b`
 
 
 # Lower-Level Information

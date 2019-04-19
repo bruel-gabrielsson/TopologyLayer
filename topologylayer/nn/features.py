@@ -76,6 +76,25 @@ def get_barcode_lengths_means(dgminfo):
     return lengths, means
 
 
+class BarcodePolyFeature(nn.Module):
+    """
+    applies function
+    sum length^a * mean^b
+    over lengths and means of barcode
+    """
+    def __init__(self, dim, a, b):
+        super(BarcodePolyFeature, self).__init__()
+        self.dim = dim
+        self.a   = a
+        self.b   = b
+
+    def forward(self, dgminfo):
+        lengths, means = get_barcode_lengths_means(dgminfo)
+        lengths = lengths[self.dim]
+        means = means[self.dim]
+        return torch.sum(torch.mul(torch.pow(lengths, self.a), torch.pow(means, self.b)))
+
+
 def pad_k(t, k, pad=0.0):
     """
     zero pad tensor t until dimension along axis is k
@@ -109,7 +128,7 @@ class TopKBarcodeLengths(nn.Module):
     def forward(self, dgminfo):
         lengths = get_barcode_lengths(dgminfo)
         # just get relevent dimension
-        lengths = lengths[self.dim,:]
+        lengths = lengths[self.dim]
         # sort lengths
         sortl, indl = torch.sort(lengths, dim=0, descending=True)
 
