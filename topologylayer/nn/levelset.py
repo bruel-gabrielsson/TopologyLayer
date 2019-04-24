@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 from scipy.spatial import Delaunay
+import dionysus as d
 
 class LevelSetLayer(nn.Module):
     """
@@ -34,4 +35,38 @@ class LevelSetLayer(nn.Module):
     def forward(self, img):
         dgm = self.fnobj.apply(img, self.complex)
         dgm = dgm[0:(self.maxdim+1),:,:]
+        return dgm, False
+
+
+def init_line_complex(p):
+    """
+    initialize 1D complex on the line
+    Input:
+        p - number of 0-simplices
+    Will add (p-1) 1-simplices
+    """
+    f = d.Filtration()
+    for i in range(p-1):
+        c = d.closure([d.Simplex([i, i+1])], 1)
+        for j in c:
+            f.append(j)
+    return f
+
+
+class LevelSetLayer1D(nn.Module):
+    """
+    Level set persistence layer
+    Parameters:
+        size : number of features
+    only returns H0
+    """
+    def __init__(self, size):
+        super(LevelSetLayer1D, self).__init__()
+        self.size = size
+        self.fnobj = levelsetdgm()
+        self.complex = init_line_complex(size)
+
+    def forward(self, img):
+        dgm = self.fnobj.apply(img, self.complex)
+        dgm = dgm[0:1,:,:]
         return dgm, False
