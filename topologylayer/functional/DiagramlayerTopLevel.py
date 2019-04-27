@@ -39,7 +39,7 @@ class Diagramlayer(Function):
         start_time = time.time()
         function_values = x
         # list of function values on vertices, and maximal dimension it will return 0,1,2,3
-        function_useable = function_values.data.numpy().flatten()
+        function_useable = function_values.cuda().data.numpy().flatten()
 
         dgms, Tbl = computePersistence(F, -1.0 * function_useable.reshape(1,-1))
         num_dgm_pts = np.max([len(dgms[0]), len(dgms[1]), len(dgms[2])])
