@@ -1,3 +1,6 @@
+import sys
+sys.path.append('build/')
+
 import cohomopt as chopt
 
 p  = chopt.Cohomology()
@@ -11,7 +14,7 @@ p.addSimplex([1,2])
 p.addSimplex([0,1])
 
 p.addSimplex([0,1,2])
-print "printC"
+print("printC")
 p.printComplex()
 p.printComplexOrder([0,3, 5,2])
 p

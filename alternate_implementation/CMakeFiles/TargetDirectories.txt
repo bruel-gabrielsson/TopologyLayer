@@ -1,5 +1,0 @@
-/Users/primoz/Projects/persist/alternate_implementation/CMakeFiles/rebuild_cache.dir
-/Users/primoz/Projects/persist/alternate_implementation/CMakeFiles/edit_cache.dir
-/Users/primoz/Projects/persist/alternate_implementation/CMakeFiles/cohomopt.dir
-/Users/primoz/Projects/persist/alternate_implementation/pybind11/CMakeFiles/rebuild_cache.dir
-/Users/primoz/Projects/persist/alternate_implementation/pybind11/CMakeFiles/edit_cache.dir
