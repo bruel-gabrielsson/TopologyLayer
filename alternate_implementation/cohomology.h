@@ -80,13 +80,19 @@ class Cohomology{
 		//main compute
 		std::vector<std::vector<std::pair<int,int>>> computeDiagram(std::vector<double> &f,int maxdim){
 			std::vector<std::vector<std::pair<int,int>>> bc(maxdim,std::vector<std::pair<int,int>>());
+			// determine when simplices appear in filtration order
 			extend(f);
+			// find sorted order of filtration.  filtration_order is permutation for filtration order
 			auto filtration_order = sortedOrder();
+
 			for(int i : filtration_order ){
 			//	std::cout<<i<<"  "<< full_function[i].first << "  "<<full_function[i].second<<std::endl;
+				// take inner product, add or reduce active cocycle matrix as necesary
 				step(i);
 			}
 
+			// put together barcode
+			// this is the part where the good index scheme would pay off
 			for(auto it = partial_diagram.begin(); it!=partial_diagram.end(); ++it){
 				int  bindx = it->first;
 				auto I = it->second;
@@ -251,7 +257,7 @@ bc[full_function[bindx].second].push_back(std::pair<int,int>(function_map[I.birt
 		//
 		// 		bdr.emplace_back(Cocycle(reverse_map[s],tmp));
 		// 	}
-		// 
+		//
 		// }
 	};
 
