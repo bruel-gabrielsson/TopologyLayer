@@ -19,14 +19,14 @@ class Diagramlayer(Function):
         # self.p.readIn(triangulation_file)
         # self.p.init()
 
-    def init_filtration(self, faces):
+    def init_filtration(self, faces, maxdim=2):
         F = faces
         f = d.Filtration()
         for i in range(F.shape[0]):
             if len(F[i]) == 4:
-                c = d.closure([d.Simplex([int(F[i][0]), int(F[i][1]), int(F[i][2]), int(F[i][3])], 0.0)], 3) #np.array(0).astype(DTYPE))],2)
+                c = d.closure([d.Simplex([int(F[i][0]), int(F[i][1]), int(F[i][2]), int(F[i][3])], 0.0)], maxdim+1) #np.array(0).astype(DTYPE))],2)
             elif len(F[i]) == 3:
-                c = d.closure([d.Simplex([int(F[i][0]), int(F[i][1]), int(F[i][2])], 0.0)], 3)
+                c = d.closure([d.Simplex([int(F[i][0]), int(F[i][1]), int(F[i][2])], 0.0)], maxdim+1)
             for j in c:
                 f.append(j)
         return f
