@@ -1,3 +1,7 @@
 *.pyc
 *.png
 *.DS_Store
+files.txt
+build/
+dist/
+topologylayer.egg-info/

@@ -2,6 +2,7 @@
 
 Requires Dionysus https://mrzv.org/software/dionysus2/
 
+
 ## Example Installation (Conda)
 
 First, create a conda environment
@@ -14,7 +15,7 @@ Now, add dependencies
 ```bash
 pip install --verbose dionysus
 conda install numpy scipy matplotlib
-conda install pytorch torchvision
+conda install pytorch=1.0 torchvision -c pytorch
 ```
 
 If you haven't already, clone the repository
@@ -22,11 +23,36 @@ If you haven't already, clone the repository
 git clone git@github.com:bruel-gabrielsson/TopologyLayer.git
 ```
 
-
 You should now be able to run the example file
 ```bash
 cd <path_to_TopologyLayer>/Examples
 python examples.py
+```
+
+## Compiling C++ Extensions
+
+PyTorch tutorial [here](https://pytorch.org/tutorials/advanced/cpp_extension.html)
+
+*Important*: in environment, it seems like using the pytorch conda channel is important
+```bash
+source activate toplayer
+conda install pytorch=1.0 torchvision -c pytorch
+```
+
+Use python `setuptools`
+
+To complile:
+```bash
+source activate toplayer
+python setup.py install --record files.txt
+```
+You should now have the module available in your environment.
+
+To delete (while testing):
+```bash
+xargs rm -rf < files.txt # files.txt from setup
+rm -rf build dist topologylayer.egg-info
+rm files.txt
 ```
 
 # High-Level Interface
