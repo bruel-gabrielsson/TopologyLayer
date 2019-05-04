@@ -133,3 +133,28 @@ class TopKBarcodeLengths(nn.Module):
         sortl, indl = torch.sort(lengths, dim=0, descending=True)
 
         return pad_k(sortl, self.k, 0.0)
+
+
+class PartialSumBarcodeLengths(nn.Module):
+    """
+    Layer that computes a partial sum of barckode lengths
+
+    inputs:
+        dim - homology dimension
+        skip - skip this number of the longest bars
+
+    ignores infinite bars and padding
+    """
+    def __init__(self, dim, skip):
+        super(PartialSumBarcodeLengths, self).__init__()
+        self.skip = skip
+        self.dim = dim
+
+    def forward(self, dgminfo):
+        lengths = get_barcode_lengths(dgminfo)
+        # just get relevent dimension
+        lengths = lengths[self.dim]
+        # sort lengths
+        sortl, indl = torch.sort(lengths, dim=0, descending=True)
+
+        return torch.sum(sortl[self.skip:])
