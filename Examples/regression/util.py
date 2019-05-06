@@ -1,5 +1,7 @@
 import torch
 import numpy as np
+from problems import generate_problem
+
 
 def penalized_ls(y, X, lam, penalty, verbose=False, lr=1e-1, maxiter=100):
     """
@@ -109,6 +111,30 @@ def gen_snr_stats(beta0, n, sigmas, lams, pen, ntrials=100, maxiter=100):
         for sigma in sigmas:
             # get best value of lambda
             means, _ = get_stats_lam(beta0, n, sigma, lams, pen, ntrials=20, maxiter=maxiter)
+            # best value of lambda
+            lam = lams[np.argmin(means)]
+            smean, sqs = get_stats(beta0, n, sigma, lam, pen, ntrials=ntrials)
+            mses.append(smean)
+            qs.append(sqs)
+            lamopt.append(lam)
+    return np.array(mses), np.array(qs), np.array(lamopt)
+
+
+def gen_dim_stats(beta0, ns, sigma, lams, pen, ntrials=100, maxiter=100, ncv=20):
+    # first we determine the optimal value of lambda
+    mses = []
+    qs = []
+    lamopt = []
+    if pen is None:
+        # just run ols
+        for n in ns:
+            smean, sqs = get_stats(beta0, n, sigma, None, None, ntrials=ntrials)
+            mses.append(smean)
+            qs.append(sqs)
+    else:
+        for n in ns:
+            # get best value of lambda
+            means, _ = get_stats_lam(beta0, n, sigma, lams, pen, ntrials=ncv, maxiter=maxiter)
             # best value of lambda
             lam = lams[np.argmin(means)]
             smean, sqs = get_stats(beta0, n, sigma, lam, pen, ntrials=ntrials)
