@@ -10,7 +10,7 @@ def penalized_ls(y, X, lam, penalty, verbose=False, lr=1e-1, maxiter=100):
     initializes beta with ls solution
     then runs maxiter iterations of GD
     """
-    betals = np.linalg.lstsq(X, y, rcond=None)[0]
+    betals = np.linalg.lstsq(X, y, rcond=1e-4)[0]
     beta = torch.autograd.Variable(torch.tensor(betals, dtype=torch.float).view(-1,1), requires_grad=True)
     Xt = torch.tensor(X, dtype=torch.float)
     yt = torch.tensor(y, dtype=torch.float).view(-1,1)
@@ -58,7 +58,7 @@ def run_trials_ols(beta0, n, sigma, ntrials=100):
     mses = []
     for i in range(ntrials):
         X, y = generate_problem(beta0, n, sigma)
-        beta1 = np.linalg.lstsq(X, y, rcond=None)[0]
+        beta1 = np.linalg.lstsq(X, y, rcond=1e-4)[0]
         mses.append(np.linalg.norm(beta0 - beta1)**2)
     return np.array(mses)
 

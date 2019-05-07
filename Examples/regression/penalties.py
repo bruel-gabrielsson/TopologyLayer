@@ -17,3 +17,18 @@ class SobLoss(torch.nn.Module):
     def forward(self, beta):
         hdiff = beta[1:] - beta[:-1]
         return torch.norm(hdiff, p=self.p)
+
+
+class NormLoss(torch.nn.Module):
+    """
+    Norm penalty on function
+
+    parameters:
+        p - dimension of norm
+    """
+    def __init__(self, p):
+        super(NormLoss, self).__init__()
+        self.p = p
+
+    def forward(self, beta):
+        return torch.norm(beta, p=self.p)

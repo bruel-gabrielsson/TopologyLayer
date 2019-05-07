@@ -40,7 +40,8 @@ spen2 = SobLoss(p=2) # Sobolev-type regularization
 # run regularization trials
 sigma = 0.05
 lams = np.logspace(-3, 0, 10)
-ns = ns = np.arange(30, 150, 10)
+ns = np.arange(30, 150, 10)
+
 
 def save_csvs(problem, pen, mses, qs, lamopt):
     fname = 'results/' + problem + '_mses_' + pen + '.csv'
@@ -51,17 +52,17 @@ def save_csvs(problem, pen, mses, qs, lamopt):
     np.savetxt(fname, lamopt, delimiter=',')
 
 
-# beta0 = generate_sinusoid(p, 3)
-# mses, qs, lamopt = gen_dim_stats(beta0, ns, sigma, lams, None, ntrials=100, maxiter=200, ncv=50)
-# save_csvs('sin', 'ols', mses, qs, lamopt)
-# mses, qs, lamopt = gen_dim_stats(beta0, ns, sigma, lams, spen1, ntrials=100, maxiter=200, ncv=50)
-# save_csvs('sin', 'spen1', mses, qs, lamopt)
-# mses, qs, lamopt = gen_dim_stats(beta0, ns, sigma, lams, spen2, ntrials=100, maxiter=200, ncv=50)
-# save_csvs('sin', 'spen2', mses, qs, lamopt)
-# mses, qs, lamopt = gen_dim_stats(beta0, ns, sigma, lams, tpen1, ntrials=100, maxiter=200, ncv=50)
-# save_csvs('sin', 'tpen1', mses, qs, lamopt)
-# mses, qs, lamopt = gen_dim_stats(beta0, ns, sigma, lams, tpen2, ntrials=100, maxiter=200, ncv=50)
-# save_csvs('sin', 'tpen2', mses, qs, lamopt)
+beta0 = generate_sinusoid(p, 3)
+mses, qs, lamopt = gen_dim_stats(beta0, ns, sigma, lams, None, ntrials=100, maxiter=200, ncv=50)
+save_csvs('sin', 'ols', mses, qs, lamopt)
+mses, qs, lamopt = gen_dim_stats(beta0, ns, sigma, lams, spen1, ntrials=100, maxiter=200, ncv=50)
+save_csvs('sin', 'spen1', mses, qs, lamopt)
+mses, qs, lamopt = gen_dim_stats(beta0, ns, sigma, lams, spen2, ntrials=100, maxiter=200, ncv=50)
+save_csvs('sin', 'spen2', mses, qs, lamopt)
+mses, qs, lamopt = gen_dim_stats(beta0, ns, sigma, lams, tpen1, ntrials=100, maxiter=200, ncv=50)
+save_csvs('sin', 'tpen1', mses, qs, lamopt)
+mses, qs, lamopt = gen_dim_stats(beta0, ns, sigma, lams, tpen2, ntrials=100, maxiter=200, ncv=50)
+save_csvs('sin', 'tpen2', mses, qs, lamopt)
 
 problem = 'box'
 beta0 = generate_boxcars(p, 3)
