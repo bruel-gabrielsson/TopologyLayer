@@ -38,7 +38,7 @@ spen1 = SobLoss(p=1) # TV regularization
 spen2 = SobLoss(p=2) # Sobolev-type regularization
 
 # run regularization trials
-sigma = 0.05
+sigma = 0.1
 lams = np.logspace(-3, 0, 10)
 ns = np.arange(30, 150, 10)
 
