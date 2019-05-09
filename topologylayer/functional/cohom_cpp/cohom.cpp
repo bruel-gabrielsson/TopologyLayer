@@ -5,7 +5,7 @@
 
 #include "cohom.h"
 
-void reuction_step(const Cocycle &c,\
+void reduction_step(const Cocycle &c,\
      std::vector<Cocycle> &Z,\
      Barcode &partial_diagram) {
 
@@ -35,11 +35,38 @@ void reuction_step(const Cocycle &c,\
      Z.erase(std::next(pivot).base());
    } else {
      //  cocycle opened
+     // TODO: check indexing!
      auto i = c.index;
      partial_diagram[i] = Interval(i);
      Z.emplace_back(Cocycle(i));
    }
  }
+
+// IMPORTANT: assumes that X has been initialized
+ void persistence_forward(SimplicialComplex &X, std::vector<double> f) {
+
+   // extend filtration
+   X.extend(f);
+   // produce sort permutation on X
+   X.sortedOrder();
+
+   // empty vector of active cocycles
+   std::vector<Cocycle> Z;
+
+   // to store barcode
+   Barcode partial_diagram;
+
+   for (auto i : X.filtration_perm ) {
+     reduction_step(X.bdr[i], Z, partial_diagram);
+   }
+
+   // TODO: return things!
+
+   return;
+ }
+
+
+
 
 torch::Tensor d_sigmoid(torch::Tensor z) {
   auto s = torch::sigmoid(z);

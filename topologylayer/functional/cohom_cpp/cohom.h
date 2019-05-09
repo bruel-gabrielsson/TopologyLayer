@@ -15,7 +15,7 @@ typedef std::map<int,Interval> Barcode;
 void reuction_step(const Cocycle &x,\
      std::vector<Cocycle> &Z,\
      Barcode partial_diagram);
-void reduction_alg();
+void persistence_forward(SimplicialComplex &X, std::vector<double> f);
 
 
 
