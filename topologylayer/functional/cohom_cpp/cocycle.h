@@ -7,26 +7,27 @@
 class Cocycle{
 	public:
 		// birth index
-		int index;
-		// vector information
-		// probably replace with sorted vector
-		std::vector<int> cochain;
+		size_t index;
+
+		// non-zero entries
+		// IMPORTANT: this is assumed to always be sorted!
+		std::vector<size_t> cochain;
 
 		// we should never have this
 		Cocycle() : index(-1){}
 
 		// initializations
-		Cocycle(int x) : index(x) {cochain.insert(x); }
-		Cocycle(int x, std::vector<int> y) :  index(x) , cochain(y) {}
+		Cocycle(size_t x) : index(x) {cochain.push_back(x); }
+		Cocycle(size_t x, std::vector<size_t> y) :  index(x) , cochain(y) {}
 
 		// for debug purposes
-		void insert(int x);
+		void insert(size_t x);
 
 		// add two cocycles over Z_2
 		void add(const Cocycle &x);
 
 		// dot product of two cocycles
-		int multiply(const Cocycle &x) const;
+		int dot(const Cocycle &x) const;
 
 		// dimension - number of nonzero entries -1
 		int dim() const;
@@ -35,46 +36,6 @@ class Cocycle{
 		void print();
 
 };
-
-
-// -------------------------------------------------------
-// Implementation - should be moved to cpp file
-// but its quite short at this point
-// -------------------------------------------------------
-
-
-
-void Cocycle::insert(int x){
-	cochain.insert(x);
-}
-
-
-void Cocycle::add(const Cocycle &x){
-	std::set<int> tmp;
-	std::set_symmetric_difference(x.cochain.begin(), x.cochain.end(),cochain.begin(),cochain.end(), std::inserter(tmp,tmp.begin()));
-	cochain = tmp;
-}
-
-
-int  Cocycle::multiply(const Cocycle &x) const{
-	// inner product
-	std::set<int> tmp;
-	std::set_intersection(x.cochain.begin(), x.cochain.end(),  cochain.begin(),cochain.end(),std::inserter(tmp,tmp.begin()));
-	return tmp.size()%2;
-}
-
-int Cocycle::dim() const{
-	return (cochain.size()==0) ? 0 : cochain.size()-1;
-}
-
-void Cocycle::print(){
-	std::cout<<index<<" |  ";
-	for(auto  s: cochain){
- 		std::cout<<s<<"  ";
-	}
-	std::cout<<std::endl;
-}
-
 
 
 

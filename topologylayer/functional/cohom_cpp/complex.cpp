@@ -1,7 +1,9 @@
 #include "complex.h"
+#include "cocycle.h"
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <map>
 
 #include <torch/extension.h>
 namespace py = pybind11;
@@ -37,6 +39,54 @@ void SimplicialComplex::initialize() {
     backprop_lookup.reserve(cells.size());
     full_function.reserve(cells.size());
     function_map.reserve(cells.size());
+
+
+	// first build reverse map
+    std::map<std::vector<size_t>, size_t> reverse_map;
+	int maxdim  = 0;
+	int indx = 0;
+    for(auto s : cells){
+		reverse_map[s] = indx++;
+		maxdim = (maxdim < s.size()-1) ? s.size()-1 : maxdim;
+	}
+
+	// inialize boundary
+	bdr.reserve(indx);
+
+
+	std::vector<size_t> s_copy; // copy of s
+	for (auto s: cells){
+		std::vector<size_t> tmp; // holds boundary
+		s_copy.clear(); // clear out copy
+		if(s.size()>1){
+			for (size_t i = 0; i < s.size(); i++ ){
+				// copy all of s except for ith element
+				s_copy.clear(); // clear out copy
+				for (size_t j = 0; j < i; j++ ){
+					s_copy.push_back(s[j]);
+				}
+				for (size_t j = i+1; j < s.size(); j++){
+					s_copy.push_back(s[j]);
+				}
+				// push to boundary matrix
+				tmp.push_back(reverse_map[s_copy]);
+			}
+		}
+
+		// make sure simplex is sorted
+	    sort(tmp.begin(), tmp.end());
+
+		// reverse_map[s] is index of cell
+		// tmp is boundary of s
+		bdr.emplace_back(Cocycle(reverse_map[s],tmp));
+	}
+
+}
+
+void SimplicialComplex::printBoundary() {
+	for (auto c : bdr) {
+		c.print();
+	}
 }
 
 // TODO: figure out how to use template with PyBind...

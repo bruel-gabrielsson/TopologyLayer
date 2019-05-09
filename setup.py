@@ -15,7 +15,8 @@ setup(name='topologylayer',
                 CppExtension('topologylayer.functional.cohom_cpp',
                         ['topologylayer/functional/cohom_cpp/pybind.cpp',
                         'topologylayer/functional/cohom_cpp/cohom.cpp',
-                        'topologylayer/functional/cohom_cpp/complex.cpp'],
+                        'topologylayer/functional/cohom_cpp/complex.cpp',
+                        'topologylayer/functional/cohom_cpp/cocycle.cpp'],
                         include_dirs=[include_dir],
                         extra_compile_args=extra['cxx']
                         )

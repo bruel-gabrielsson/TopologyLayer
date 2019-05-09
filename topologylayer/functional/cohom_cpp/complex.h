@@ -11,7 +11,10 @@ must be able to:
 * sort by filtration order
 */
 #include <vector>
+#include "cocycle.h"
 
+// TODO: template over filtration type
+// TODO: different types for different complexes/ filtrations
 class SimplicialComplex{
   public:
 
@@ -38,6 +41,9 @@ class SimplicialComplex{
     // for cech, will be vector of vectors with variable entries
     std::vector<std::vector<size_t>> backprop_lookup;
 
+    // hold boundary matrix of complex
+    std::vector<Cocycle> bdr;
+
     // appends simplex to complex
     void append(std::vector<size_t> &x);
 
@@ -46,6 +52,9 @@ class SimplicialComplex{
 
     // prints filtration
     void printFiltration();
+
+    // prints boundary matrix
+    void printBoundary();
 
     // pre-allocate vectors once cell list has been completed.
     void initialize();

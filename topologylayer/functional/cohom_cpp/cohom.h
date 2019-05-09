@@ -1,5 +1,15 @@
 #include <torch/extension.h>
 
+// cohomology reduction algorithm
+// return barcode
+
+
+
+
+/*
+DEMO function below
+*/
+
 std::vector<at::Tensor> lltm_forward(
     torch::Tensor input,
     torch::Tensor weights,
