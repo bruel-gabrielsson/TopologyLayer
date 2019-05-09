@@ -9,20 +9,61 @@ void Cocycle::insert(size_t x){
 	cochain.push_back(x);
 }
 
-
+// IMPORTANT: this function assumes that cocycles are sorted!
 void Cocycle::add(const Cocycle &x){
-	// std::set<int> tmp;
-	// std::set_symmetric_difference(x.cochain.begin(), x.cochain.end(),cochain.begin(),cochain.end(), std::inserter(tmp,tmp.begin()));
-	// cochain = tmp;
+	// quick check to see if there is anything to do
+	if (x.cochain.size() == 0) {return;}
+	if (cochain.size() == 0) {cochain = x.cochain; return;}
+
+	// now we know there is something non-trivial to do
+	std::vector<size_t> tmp;
+	size_t i1 = 0;
+	size_t i2 = 0;
+	do {
+		size_t v1 = cochain[i1];
+		size_t v2 = x.cochain[i2];
+		if (v1 == v2) {
+			// F2 means sum is 0
+			i1++;
+			i2++;
+		} else if (v1 < v2) {
+			tmp.push_back(v1);
+			i1++;
+		} else { // v2 < v1
+			tmp.push_back(v2);
+			i2++;
+		}
+	} while (i1 < cochain.size() && i2 < x.cochain.size());
+	cochain = tmp;
+	return;
 }
 
-
+// IMPORTANT: this function assumes that cocycles are sorted!
 int  Cocycle::dot(const Cocycle &x) const{
 	// inner product
+	// quick check to see if anything to be done
+	if (cochain.size() == 0 || x.cochain.size() == 0) return 0;
+	// loop over indices to compute size of intersection
+	size_t i1 = 0;
+	size_t i2 = 0;
+	size_t intersection = 0;
+	do {
+		size_t v1 = cochain[i1];
+		size_t v2 = x.cochain[i2];
+		if (v1 == v2) {
+			i1++;
+			i2++;
+			intersection++;
+		} else if (v1 < v2) {
+			i1++;
+		} else { // v2 < v1
+			i2++;
+		}
+	} while (i1 < cochain.size() && i2 < x.cochain.size());
 	// std::set<int> tmp;
 	// std::set_intersection(x.cochain.begin(), x.cochain.end(),  cochain.begin(),cochain.end(),std::inserter(tmp,tmp.begin()));
 	// return tmp.size()%2;
-	return 0;
+	return intersection % 2;
 }
 
 int Cocycle::dim() const{

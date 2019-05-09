@@ -43,8 +43,8 @@ void SimplicialComplex::initialize() {
 
 	// first build reverse map
     std::map<std::vector<size_t>, size_t> reverse_map;
-	int maxdim  = 0;
-	int indx = 0;
+	size_t maxdim  = 0;
+	size_t indx = 0;
     for(auto s : cells){
 		reverse_map[s] = indx++;
 		maxdim = (maxdim < s.size()-1) ? s.size()-1 : maxdim;
