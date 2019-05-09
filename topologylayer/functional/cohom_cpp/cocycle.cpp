@@ -9,6 +9,7 @@ void Cocycle::insert(size_t x){
 	cochain.push_back(x);
 }
 
+// add x to cocycle
 // IMPORTANT: this function assumes that cocycles are sorted!
 void Cocycle::add(const Cocycle &x){
 	// quick check to see if there is anything to do
@@ -34,10 +35,21 @@ void Cocycle::add(const Cocycle &x){
 			i2++;
 		}
 	} while (i1 < cochain.size() && i2 < x.cochain.size());
+	// run through rest of entries and dump in
+	// only one of the loops will actually do anything
+	while (i1 < cochain.size()) {
+		tmp.push_back(cochain[i1]);
+		i1++;
+	}
+	while (i2 < x.cochain.size()) {
+		tmp.push_back(x.cochain[i2]);
+		i2++;
+	}
 	cochain = tmp;
 	return;
 }
 
+// take dot product with cocycle
 // IMPORTANT: this function assumes that cocycles are sorted!
 int  Cocycle::dot(const Cocycle &x) const{
 	// inner product
