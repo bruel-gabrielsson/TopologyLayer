@@ -48,7 +48,7 @@ class SimplicialComplex{
     void append(std::vector<size_t> &x);
 
     // prints the list of simplices
-    void print();
+    void printComplex();
 
     // prints filtration
     void printFiltration();

@@ -16,7 +16,7 @@ void SimplicialComplex::append(std::vector<size_t> &x) {
   cells.push_back(x);
 }
 
-void SimplicialComplex::print() {
+void SimplicialComplex::printComplex() {
   for (auto s : cells) {
     // use python print function
     py::print(s);
