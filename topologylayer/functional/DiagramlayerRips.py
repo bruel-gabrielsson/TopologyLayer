@@ -1,8 +1,8 @@
 from __future__ import print_function
 import numpy as np
-import sys
-sys.path.append('../Python')
-from ..util.topologicalutilsRIPS import computePersistence
+# import sys
+# sys.path.append('../Python')
+from ..util.flag import computePersistence
 import dionysus as d
 import time
 import torch
@@ -32,7 +32,7 @@ class Diagramlayer(Function):
         ''' 2 is max homology dimension '''
         ''' returns (sorted) filtration filled with the k-skeleton of the clique complex built on the points at distance at most r from each other '''
         F = d.fill_rips(function_useable, MAX_DIMENSION, SATURATION_VALUE)
-        F.sort()
+        # F.sort() # this is done in computePersistence
 
         dgms, Tbl = computePersistence(F)
         max_pts = np.max([len(dgms[i]) for i in xrange(maxdim+1)])
