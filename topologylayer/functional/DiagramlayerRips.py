@@ -1,8 +1,9 @@
 from __future__ import print_function
 import numpy as np
 import sys
-sys.path.append('../Python')
-from ..util.topologicalutilsRIPS import computePersistence
+sys.path.append('../util')
+#from ..util.topologicalutilsRIPS import computePersistence
+from topologicalutilsRIPS import computePersistence
 import dionysus as d
 import time
 import torch
@@ -10,8 +11,14 @@ from torch.autograd import Variable, Function
 dtype=torch.float32 # torch.double #torch.float32
 PLOT = True
 
+ALPHA = True
+if ALPHA:
+    import diode
+
 ''' OBS: -1.0 are used as a token value for dgm values and indicies!!!!!! '''
 class Diagramlayer(Function):
+    def __init__(self):
+        super(Diagramlayer, self).__init__()
 
     # Note that both forward and backward are @staticmethods
     @staticmethod
@@ -31,7 +38,11 @@ class Diagramlayer(Function):
         function_useable = function_values.data.numpy()
         ''' 2 is max homology dimension '''
         ''' returns (sorted) filtration filled with the k-skeleton of the clique complex built on the points at distance at most r from each other '''
-        F = d.fill_rips(function_useable, MAX_DIMENSION, SATURATION_VALUE)
+        if ALPHA:
+            simplices = diode.fill_alpha_shapes(function_useable)
+            F = d.Filtration(simplices)
+        else:
+            F = d.fill_rips(function_useable, MAX_DIMENSION, SATURATION_VALUE)
         F.sort()
 
         dgms, Tbl = computePersistence(F)
@@ -109,6 +120,7 @@ class Diagramlayer(Function):
         return grad_input, None, None, None
 
 if __name__ == "__main__":
+    # diagramlayer = Diagramlayer.apply
     diagramlayer = Diagramlayer.apply
     from torch.autograd import gradcheck
     from utils_plot import plot_diagram2
