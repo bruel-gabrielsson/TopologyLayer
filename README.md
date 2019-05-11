@@ -87,11 +87,29 @@ corresponding to the persistence diagrams
 A `RipsLayer` takes in a point cloud, and outputs the persistence diagram of the Rips complex.
 
 ```python
-from topologylayer.nn.rips import RipsLayer
+from topologylayer.nn import RipsLayer
 
 layer = RipsLayer(maxdim=1, rmax=np.inf, verbose=True)
 dgm, issublevelset = layer(x)
 ```
+
+### AlphaLayer
+An `AlphaLayer` takes in a point cloud, and outputs the persistence diagram of the Alpha complex.
+
+```python
+from topologylayer.nn import AlphaLayer
+
+layer = AlphaLayer(maxdim=1, verbose=True)
+dgm, issublevelset = layer(x)
+```
+
+The `AlphaLayer` is similar to the Rips layer, but potentially much faster for low-dimensions.
+We use the convention that edges in the alpha complex have filtration value equal to the distance between the two points they connect.  This differs from the typical definition, where filtration values are halved.  We also use a flag complex on the 1-skeleton, which differs from the typical definition.
+
+Notes
+* 0-dimensional homology should agree with `RipsLayer`
+* 1-dimensional homology is 2*Cech homology
+* 2+ dimensional homology - no exact relation with Rips/Cech
 
 ### SumBarcodeLengths
 
