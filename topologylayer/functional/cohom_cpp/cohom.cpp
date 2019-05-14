@@ -43,7 +43,13 @@ void reduction_step(const Cocycle &c,\
  }
 
 // IMPORTANT: assumes that X has been initialized
- void persistence_forward(SimplicialComplex &X, torch::Tensor f) {
+/*
+	INPUTS:
+		X - simplicial complex
+		f - filtration
+		MAXDIM - maximum homology dimension
+*/
+ std::vector<std::vector<torch::Tensor>> persistence_forward(SimplicialComplex &X, torch::Tensor f, int MAXDIM) {
 
    // extend filtration
    X.extend(f);
@@ -60,7 +66,48 @@ void reduction_step(const Cocycle &c,\
      reduction_step(X.bdr[i], Z, partial_diagram);
    }
 
-   // TODO: return things!
+   // return things!
 
-   return;
+	 // old way of doing things
+	 std::map<int,std::vector<Interval>> persistence_diagram;
+	 float *f2 = f.data<float>(); // pointer to data
+	 // fill in barcode - this will be changed to a tensor
+		for(auto it = partial_diagram.begin(); it!=partial_diagram.end(); ++it){
+			int  bindx = it->first;
+			auto I = it->second;
+			if(I.death_index==-1){
+				persistence_diagram[X.bdr[bindx].dim()].emplace_back(Interval(I.birth_index, I.death_index, f2[I.birth_index],-1));
+			}
+			else{
+				persistence_diagram[X.bdr[bindx].dim()].emplace_back(Interval(I.birth_index, I.death_index, f2[I.birth_index],f2[I.death_index]));
+			}
+		}
+
+		// return type will be a list of lists of tensors
+ 	 // t[k] is list of two tensors - homology in dimension k
+ 	 // t[k][0] is float32 tensor with barcode
+ 	 // t[k][1] is int32 tensor with critical simplices indices
+
+		// convert output to tensors
+		std::vector<std::vector<torch::Tensor>> ret(MAXDIM+1); // return array
+		for (int k = 0; k < MAXDIM+1; k++) {
+			ret[k] = std::vector<torch::Tensor>(2);
+			int Nk = persistence_diagram[k].size(); // number of bars in dimension k
+			ret[k][0] = torch::empty({Nk,2},
+				torch::TensorOptions().dtype(torch::kFloat32).layout(torch::kStrided).requires_grad(true));
+			ret[k][1] = torch::empty({Nk,2},
+				torch::TensorOptions().dtype(torch::kInt32).layout(torch::kStrided).requires_grad(false));
+			// put barcode in return tensors
+			for (int j = 0; j < Nk; j++) {
+				// birth-death values
+				(ret[k][0][j].data<float>())[0] = (float) persistence_diagram[k][j].birth;
+				(ret[k][0][j].data<float>())[1] = (float) persistence_diagram[k][j].death;
+				// birth-death indices
+				(ret[k][1][j].data<int>())[0] = (int) persistence_diagram[k][j].birth_index;
+				(ret[k][1][j].data<int>())[1] = (int) persistence_diagram[k][j].death_index;
+			}
+		}
+
+
+   return ret;
  }

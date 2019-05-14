@@ -8,26 +8,26 @@
 
 class Interval{
 	public:
-		double birth;
-		double death;
-		size_t birth_index;
-		size_t death_index;
+		float birth;
+		float death;
+		int birth_index;
+		int death_index;
 
 		Interval(){}
 
 		// initializations
-		Interval(size_t bindex) : birth_index(bindex), death_index(-1){}
-		Interval(size_t bindex, double btime) : birth_index(bindex), birth(btime){}
+		Interval(int bindex) : birth_index(bindex), death_index(-1){}
+		Interval(int bindex, float btime) : birth_index(bindex), birth(btime){}
 
-		Interval(size_t bindex, size_t dindex, double btime, double dtime) : birth_index(bindex), death_index(dindex), birth(btime), death(dtime){}
+		Interval(int bindex, int dindex, float btime, float dtime) : birth_index(bindex), death_index(dindex), birth(btime), death(dtime){}
 
 		// close an interval - write doewn a death time
-		void close(size_t dindex){
+		void close(int dindex){
 			death_index = dindex;
 		}
 
 		// index + death time
-		void close(size_t dindex, double dtime){
+		void close(int dindex, float dtime){
 			death_index = dindex;
 			dtime = dtime;
 		}
