@@ -98,7 +98,7 @@ void SimplicialComplex::extend(torch::Tensor f) {
     function_map.resize(N);
 		float *f2 = f.data<float>(); // pointer to data
     for (size_t i = 0; i < N; i++ ){
-        int element = *std::max_element(cells[i].begin(),cells[i].end(),[&f2](int i1, int i2){return f2[i1]<f2[i2];});
+        int element = *std::max_element(cells[i].begin(),cells[i].end(),[&f2](int i1, int i2){return f2[i1]<f2[i2];}); // < if lower
         full_function[i] = std::pair<double,int>(f2[element], cells[i].size()-1);
         function_map[i] = element;
     }

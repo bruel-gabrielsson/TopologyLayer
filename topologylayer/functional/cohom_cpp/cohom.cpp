@@ -76,10 +76,10 @@ void reduction_step(const Cocycle &c,\
 			int  bindx = it->first;
 			auto I = it->second;
 			if(I.death_index==-1){
-				persistence_diagram[X.bdr[bindx].dim()].emplace_back(Interval(I.birth_index, I.death_index, f2[I.birth_index],-1));
+				persistence_diagram[X.bdr[bindx].dim()].emplace_back(Interval(I.birth_index, I.death_index, X.full_function[I.birth_index].first,-1));
 			}
 			else{
-				persistence_diagram[X.bdr[bindx].dim()].emplace_back(Interval(I.birth_index, I.death_index, f2[I.birth_index],f2[I.death_index]));
+				persistence_diagram[X.bdr[bindx].dim()].emplace_back(Interval(I.birth_index, I.death_index, X.full_function[I.birth_index].first,X.full_function[I.death_index].first));
 			}
 		}
 
