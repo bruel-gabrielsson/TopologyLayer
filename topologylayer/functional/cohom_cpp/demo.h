@@ -23,9 +23,10 @@ std::vector<float> testDump(torch::Tensor z) {
 
 
 // example: put vector<float> in tensor
+// in python, will have t.dtype = torch.float32
 torch::Tensor testLoadFloat(std::vector<float> &f) {
   int N = f.size();
-  torch::Tensor t = torch::empty({N});
+  torch::Tensor t = torch::empty({N}, torch::TensorOptions().dtype(torch::kFloat32));
   for (size_t i = 0; i < f.size(); i++) {
     *(t[i].data<float>()) = f[i];
   }
@@ -34,6 +35,7 @@ torch::Tensor testLoadFloat(std::vector<float> &f) {
 }
 
 // example: put vector<int> in tensor
+// in python, will have t.dtype = torch.int32
 torch::Tensor testLoadInt(std::vector<int> &f) {
   int N = f.size();
   torch::Tensor t = torch::empty({N}, torch::TensorOptions().dtype(torch::kInt32));
