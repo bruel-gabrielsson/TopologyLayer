@@ -15,4 +15,4 @@ typedef std::map<int,Interval> Barcode;
 void reuction_step(const Cocycle &x,\
      std::vector<Cocycle> &Z,\
      Barcode partial_diagram);
-void persistence_forward(SimplicialComplex &X, std::vector<double> f);
+void persistence_forward(SimplicialComplex &X, torch::Tensor f);

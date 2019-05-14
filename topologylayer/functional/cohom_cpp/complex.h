@@ -10,6 +10,7 @@ must be able to:
 * add simplices
 * sort by filtration order
 */
+#include <torch/extension.h>
 #include <vector>
 #include "cocycle.h"
 
@@ -32,7 +33,7 @@ class SimplicialComplex{
     // holds map to critical cell
     std::vector<size_t> function_map;
     // holds filtration information
-    std::vector<std::pair<double, int>> full_function;
+    std::vector<std::pair<float, int>> full_function;
 
     // for backpropagation lookup
     // holds the critical simplex for each cell
@@ -63,7 +64,7 @@ class SimplicialComplex{
     // TODO: figure out how to use template with PyBind...
     // template <typename T>
     // void extend(std::vector<T> &f);
-    void extend(std::vector<double> &f);
+    void extend(torch::Tensor f);
 
     // fill in filtration order
     void sortedOrder();

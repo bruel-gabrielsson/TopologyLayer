@@ -43,7 +43,7 @@ void reduction_step(const Cocycle &c,\
  }
 
 // IMPORTANT: assumes that X has been initialized
- void persistence_forward(SimplicialComplex &X, std::vector<double> f) {
+ void persistence_forward(SimplicialComplex &X, torch::Tensor f) {
 
    // extend filtration
    X.extend(f);

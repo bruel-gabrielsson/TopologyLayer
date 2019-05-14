@@ -13,7 +13,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   .def(py::init<>())
   .def("append", &SimplicialComplex::append)
   .def("initialize", &SimplicialComplex::initialize)
-  .def("extendDouble", &SimplicialComplex::extend)
+  .def("extendFloat", &SimplicialComplex::extend)
   .def("sortedOrder", &SimplicialComplex::sortedOrder)
   .def("printFiltration", &SimplicialComplex::printFiltration)
   .def("printBoundary", &SimplicialComplex::printBoundary)
