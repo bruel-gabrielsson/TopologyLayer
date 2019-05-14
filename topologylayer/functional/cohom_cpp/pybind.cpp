@@ -16,9 +16,11 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   .def("extendFloat", &SimplicialComplex::extend)
   .def("sortedOrder", &SimplicialComplex::sortedOrder)
   .def("printFiltration", &SimplicialComplex::printFiltration)
+  .def("printDims", &SimplicialComplex::printDims)
   .def("printBoundary", &SimplicialComplex::printBoundary)
   .def("printCells", &SimplicialComplex::printComplex);
   m.def("persistenceForward", &persistence_forward);
+  m.def("persistenceBackward", &persistence_backward);
   m.def("forward", &lltm_forward, "LLTM forward");
   m.def("backward", &lltm_backward, "LLTM backward");
   m.def("testPrint", &testPrint);

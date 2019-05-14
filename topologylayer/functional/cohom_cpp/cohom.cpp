@@ -42,12 +42,17 @@ void reduction_step(const Cocycle &c,\
    }
  }
 
-// IMPORTANT: assumes that X has been initialized
+
 /*
 	INPUTS:
 		X - simplicial complex
+			IMPORTANT: assumes that X has been initialized
 		f - filtration
 		MAXDIM - maximum homology dimension
+	OUTPUTS: vector of vectors of tensors - t
+	 t[k] is list of two tensors - homology in dimension k
+	 t[k][0] is float32 tensor with barcode
+	 t[k][1] is int32 tensor with critical simplices indices
 */
  std::vector<std::vector<torch::Tensor>> persistence_forward(SimplicialComplex &X, torch::Tensor f, int MAXDIM) {
 
@@ -70,7 +75,6 @@ void reduction_step(const Cocycle &c,\
 
 	 // old way of doing things
 	 std::map<int,std::vector<Interval>> persistence_diagram;
-	 float *f2 = f.data<float>(); // pointer to data
 	 // fill in barcode - this will be changed to a tensor
 		for(auto it = partial_diagram.begin(); it!=partial_diagram.end(); ++it){
 			int  bindx = it->first;
@@ -92,6 +96,7 @@ void reduction_step(const Cocycle &c,\
 		std::vector<std::vector<torch::Tensor>> ret(MAXDIM+1); // return array
 		for (int k = 0; k < MAXDIM+1; k++) {
 			ret[k] = std::vector<torch::Tensor>(2);
+			// TODO: can figure this out directly from X.ncells
 			int Nk = persistence_diagram[k].size(); // number of bars in dimension k
 			ret[k][0] = torch::empty({Nk,2},
 				torch::TensorOptions().dtype(torch::kFloat32).layout(torch::kStrided).requires_grad(true));
@@ -108,6 +113,29 @@ void reduction_step(const Cocycle &c,\
 			}
 		}
 
-
    return ret;
  }
+
+
+/*
+INPUTS:
+		X - simplicial complex
+		IMPORTANT: assumes that X has been initialized
+	grad_res - vector of vectors of tensors
+	same as input format:
+	grad_res[k] is vector of two tensors
+	grad_res[k][0] is float32 tensor of gradient of births/deaths in dimension k
+	grad_res[k][1] is same int32 tensor of critical simplex indices
+OUTPUT:
+	grad_f - gradient w.r.t. original function
+*/
+torch::Tensor persistence_backward(
+ SimplicialComplex &X, std::vector<std::vector<torch::Tensor>> grad_res) {
+
+	 int N = X.ncells[0]; // number of cells in X
+	 torch::Tensor grad_f = torch::zeros({N},
+		 torch::TensorOptions().dtype(torch::kFloat32).layout(torch::kStrided));
+
+	 return grad_f;
+
+}

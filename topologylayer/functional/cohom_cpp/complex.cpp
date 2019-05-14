@@ -23,6 +23,12 @@ void SimplicialComplex::printComplex() {
   }
 }
 
+void SimplicialComplex::printDims() {
+	for (auto i : ncells) {
+		py::print(i);
+	}
+}
+
 void SimplicialComplex::printFiltration() {
     for (auto i : filtration_perm ){
         py::print(full_function[i]);
@@ -47,7 +53,13 @@ void SimplicialComplex::initialize() {
 	size_t indx = 0;
     for(auto s : cells){
 		reverse_map[s] = indx++;
-		maxdim = (maxdim < s.size()-1) ? s.size()-1 : maxdim;
+		size_t sdim = s.size()-1;
+		maxdim = (maxdim < sdim) ? sdim : maxdim;
+		// make sure ncells is large enough
+		while (ncells.size() < maxdim+1) {
+			ncells.push_back(0);
+		}
+		++ncells[sdim]; // increment ncells in appropriate dimension
 	}
 
 	// inialize boundary

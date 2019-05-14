@@ -21,8 +21,8 @@ class SimplicialComplex{
 
     // complex is stored as list of cells
     std::vector<std::vector<size_t>> cells;
-    // maybe hold filtration in class
-    // std::vector<float> filtration;
+    // number of cells in each dimension
+    std::vector<int> ncells;
 
     // discrete time filtration on cells
     std::vector<size_t> filtration;
@@ -34,6 +34,8 @@ class SimplicialComplex{
     std::vector<size_t> function_map;
     // holds filtration information
     std::vector<std::pair<float, int>> full_function;
+
+
 
     // for backpropagation lookup
     // holds the critical simplex for each cell
@@ -56,6 +58,9 @@ class SimplicialComplex{
 
     // prints boundary matrix
     void printBoundary();
+
+    // print number of cells in each dim
+    void printDims();
 
     // pre-allocate vectors once cell list has been completed.
     void initialize();
