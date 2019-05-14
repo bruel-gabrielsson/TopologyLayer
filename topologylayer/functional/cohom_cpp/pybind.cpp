@@ -2,7 +2,7 @@
 
 #include "cohom.h"
 #include "complex.h"
-#include "demo.h"
+// #include "demo.h"
 
 namespace py = pybind11;
 
@@ -22,12 +22,12 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   .def("printCells", &SimplicialComplex::printComplex);
   m.def("persistenceForward", &persistence_forward);
   m.def("persistenceBackward", &persistence_backward);
-  m.def("forward", &lltm_forward, "LLTM forward");
-  m.def("backward", &lltm_backward, "LLTM backward");
-  m.def("testPrint", &testPrint);
-  m.def("testDump", &testDump);
-  m.def("testLoadFloat", &testLoadFloat);
-  m.def("testLoadInt", &testLoadInt);
+  // m.def("forward", &lltm_forward, "LLTM forward");
+  // m.def("backward", &lltm_backward, "LLTM backward");
+  // m.def("testPrint", &testPrint);
+  // m.def("testDump", &testDump);
+  // m.def("testLoadFloat", &testLoadFloat);
+  // m.def("testLoadInt", &testLoadInt);
 }
 
 //   .def("extendDouble", &SimplicialComplex::extend<double>)
