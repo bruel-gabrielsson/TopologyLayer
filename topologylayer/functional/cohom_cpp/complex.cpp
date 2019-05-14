@@ -29,6 +29,12 @@ void SimplicialComplex::printDims() {
 	}
 }
 
+void SimplicialComplex::printFunctionMap() {
+	for (int i = 0; i < function_map.size(); i++) {
+		py::print(i, function_map[i]);
+	}
+}
+
 void SimplicialComplex::printFiltration() {
     for (auto i : filtration_perm ){
         py::print(full_function[i]);

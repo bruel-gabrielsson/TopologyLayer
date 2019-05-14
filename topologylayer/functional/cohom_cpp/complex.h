@@ -56,6 +56,9 @@ class SimplicialComplex{
     // prints filtration
     void printFiltration();
 
+    // prints function map
+    void printFunctionMap();
+
     // prints boundary matrix
     void printBoundary();
 

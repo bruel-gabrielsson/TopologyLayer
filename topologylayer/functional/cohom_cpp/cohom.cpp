@@ -2,6 +2,7 @@
 #include <torch/extension.h>
 #include <iostream>
 #include <vector>
+#include <limits>
 
 #include "cohom.h"
 
@@ -80,10 +81,12 @@ void reduction_step(const Cocycle &c,\
 			int  bindx = it->first;
 			auto I = it->second;
 			if(I.death_index==-1){
-				persistence_diagram[X.bdr[bindx].dim()].emplace_back(Interval(I.birth_index, I.death_index, X.full_function[I.birth_index].first,-1));
+				persistence_diagram[X.bdr[bindx].dim()].emplace_back(
+					Interval(I.birth_index, I.death_index, X.full_function[I.birth_index].first,std::numeric_limits<float>::infinity()));
 			}
 			else{
-				persistence_diagram[X.bdr[bindx].dim()].emplace_back(Interval(I.birth_index, I.death_index, X.full_function[I.birth_index].first,X.full_function[I.death_index].first));
+				persistence_diagram[X.bdr[bindx].dim()].emplace_back(
+					Interval(I.birth_index, I.death_index, X.full_function[I.birth_index].first,X.full_function[I.death_index].first));
 			}
 		}
 
@@ -135,6 +138,47 @@ torch::Tensor persistence_backward(
 	 int N = X.ncells[0]; // number of cells in X
 	 torch::Tensor grad_f = torch::zeros({N},
 		 torch::TensorOptions().dtype(torch::kFloat32).layout(torch::kStrided));
+	// pointer to data
+	float *grad_f_data = grad_f.data<float>();
+
+	int NDIMS = grad_res.size();
+
+	// loop over homology dimensions
+	for (int k = 0; k < NDIMS; k++) {
+
+		// number of bars in dimension k
+		int Nk = grad_res[k][0].size(0);
+
+
+		// loop over bars in dim k barcode
+		for (int j = 0; j < Nk; j++) {
+			// get pointers to filtration indices and pointers
+			int *filtind = grad_res[k][1][j].data<int>();
+			float *grad = grad_res[k][0][j].data<float>();
+
+			int bi = filtind[0];
+			// check for non-infinite bar
+			if (bi != -1) {
+				// get birth cell
+				auto ci = X.filtration_perm[bi];
+				// find critical vertex
+				auto i = X.function_map[ci];
+				// add gradient to critical vertex.
+				grad_f_data[i] += grad[0];
+			}
+
+			int di = filtind[1];
+			// check for non-infinite bar
+			if (di != -1) {
+				// get death cell
+				auto ci = X.filtration_perm[di];
+				// find critical vertex
+				auto i = X.function_map[ci];
+				// add gradient to critical vertex.
+				grad_f_data[i] += grad[1];
+			}
+		}
+	}
 
 	 return grad_f;
 
