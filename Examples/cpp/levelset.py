@@ -18,14 +18,14 @@ def sum_finite(d):
 # apparently there is some overhead the first time backward is called.
 # we'll just get it over with now.
 n = 20
-y = torch.rand(n, dtype=torch.float).requires_grad_(True)
+y = torch.rand(n, 1, dtype=torch.float).requires_grad_(True)
 layer1 = LevelSetLayer1Dnew(n, False)
 dgm, issublevel = layer1(y)
 p = sum_finite(dgm[0])
 p.backward()
 
 n = 100
-y = torch.rand(n, dtype=torch.float).requires_grad_(True)
+y = torch.rand(n, 1, dtype=torch.float).requires_grad_(True)
 print("1D complexes n = %d" % n)
 
 t0 = time.time()
@@ -75,11 +75,11 @@ print("old construction = %f sec" % tb)
 print("factor improvement = %f" % (tb/ta))
 
 t0 = time.time()
-dgm, issublevel = layer1(x.view(-1))
+dgm, issublevel = layer1(x.view(-1,1))
 ta = time.time() - t0
 print("\nnew forward = %f sec" % ta)
 t0 = time.time()
-dgm2, issublevel2 = layer2(x.view(-1))
+dgm2, issublevel2 = layer2(x.view(-1,1))
 tb = time.time() - t0
 print("old forward  = %f sec" % tb)
 print("factor improvement = %f" % (tb/ta))
