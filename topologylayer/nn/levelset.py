@@ -1,4 +1,5 @@
 from ..functional.DiagramlayerTopLevel import Diagramlayer as levelsetdgm
+from ..util.process import remove_filler
 
 import torch
 import torch.nn as nn
@@ -34,8 +35,9 @@ class LevelSetLayer(nn.Module):
 
     def forward(self, img):
         dgm = self.fnobj.apply(img, self.complex)
-        dgm = dgm[0:(self.maxdim+1),:,:]
-        return dgm, False
+        #dgm = dgm[0:(self.maxdim+1),:,:]
+        dgms = tuple(remove_filler(dgm[i], -np.inf) for i in range(self.maxdim+1))
+        return dgms, False
 
 
 def init_line_complex(p):
@@ -68,5 +70,5 @@ class LevelSetLayer1D(nn.Module):
 
     def forward(self, img):
         dgm = self.fnobj.apply(img, self.complex)
-        dgm = dgm[0:1,:,:]
-        return dgm, False
+        dgm = dgm[0]
+        return (dgm,), False

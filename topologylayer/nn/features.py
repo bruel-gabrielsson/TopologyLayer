@@ -14,10 +14,10 @@ def get_start_end(dgminfo):
     dgm, issublevel = dgminfo
     if issublevel:
         # sub-level set filtration e.g. Rips
-        start, end = dgm[:,:,0], dgm[:,:,1]
+        start, end = dgm[:,0], dgm[:,1]
     else:
         # super-level set filtration
-        end, start = dgm[:,:,0], dgm[:,:,1]
+        end, start = dgm[:,0], dgm[:,1]
     return start, end
 
 
@@ -56,7 +56,7 @@ class SumBarcodeLengths(nn.Module):
         lengths = get_barcode_lengths(dgminfo)
 
         # return the sum of the barcode lengths
-        return torch.sum(lengths, dim=1)
+        return torch.sum(lengths, dim=0)
 
 
 def get_barcode_lengths_means(dgminfo):

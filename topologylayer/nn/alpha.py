@@ -1,4 +1,6 @@
 from ..functional.alpha import Diagramlayer as alphadgm
+from ..util.process import remove_filler
+
 import torch
 
 
@@ -19,4 +21,5 @@ class AlphaLayer(torch.nn.Module):
 
     def forward(self, x):
         dgm = self.fnobj.apply(x, self.maxdim, self.verbose)
-        return dgm, True
+        dgms = tuple(remove_filler(dgm[i], -1) for i in range(self.maxdim+1))
+        return dgms, True

@@ -57,8 +57,6 @@ rm files.txt
 
 ## Barcode Return Types
 
-This currently only applies to the levelset layers in `topologylayer.nn.levelset_cpp`
-
 The output of extensions will be a tuple of `torch.float` tensors (one tensor for each homology dimension), and a flag indicating whether computation was sub-level set persistence.
 
 ```python
