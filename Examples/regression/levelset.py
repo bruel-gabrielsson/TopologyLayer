@@ -11,23 +11,23 @@ from penalties import SobLoss
 class TopLoss(nn.Module):
     def __init__(self, p):
         super(TopLoss, self).__init__()
-        self.pdfn = LevelSetLayer1D(p)
+        self.pdfn = LevelSetLayer1D(p, False)
         self.topfn = SumBarcodeLengths()
 
     def forward(self, beta):
-        dgminfo = self.pdfn(beta)
-        return self.topfn(dgminfo)
+        dgms, issublevel = self.pdfn(beta)
+        return self.topfn((dgms[0], issublevel))
 
 
 class TopLoss2(nn.Module):
     def __init__(self, p):
         super(TopLoss2, self).__init__()
-        self.pdfn = LevelSetLayer1D(p)
+        self.pdfn = LevelSetLayer1D(p, False)
         self.topfn = PartialSumBarcodeLengths(dim=0, skip=2)
 
     def forward(self, beta):
-        dgminfo = self.pdfn(beta)
-        return self.topfn(dgminfo)
+        dgms, issublevel = self.pdfn(beta)
+        return self.topfn((dgms[0], issublevel))
 
 # number of features
 p = 100
@@ -40,7 +40,7 @@ spen2 = SobLoss(p=2) # Sobolev-type regularization
 # run regularization trials
 sigma = 0.1
 lams = np.logspace(-3, 0, 10)
-ns = np.arange(30, 150, 10)
+ns = np.arange(25, 145, 10)
 
 
 def save_csvs(problem, pen, mses, qs, lamopt):

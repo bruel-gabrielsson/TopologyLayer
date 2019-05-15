@@ -90,8 +90,7 @@ class BarcodePolyFeature(nn.Module):
 
     def forward(self, dgminfo):
         lengths, means = get_barcode_lengths_means(dgminfo)
-        lengths = lengths[self.dim]
-        means = means[self.dim]
+
         return torch.sum(torch.mul(torch.pow(lengths, self.a), torch.pow(means, self.b)))
 
 
@@ -127,10 +126,9 @@ class TopKBarcodeLengths(nn.Module):
 
     def forward(self, dgminfo):
         lengths = get_barcode_lengths(dgminfo)
-        # just get relevent dimension
-        lengths = lengths[self.dim]
+
         # sort lengths
-        sortl, indl = torch.sort(lengths, dim=0, descending=True)
+        sortl, indl = torch.sort(lengths, descending=True)
 
         return pad_k(sortl, self.k, 0.0)
 
@@ -152,9 +150,8 @@ class PartialSumBarcodeLengths(nn.Module):
 
     def forward(self, dgminfo):
         lengths = get_barcode_lengths(dgminfo)
-        # just get relevent dimension
-        lengths = lengths[self.dim]
+
         # sort lengths
-        sortl, indl = torch.sort(lengths, dim=0, descending=True)
+        sortl, indl = torch.sort(lengths, descending=True)
 
         return torch.sum(sortl[self.skip:])
