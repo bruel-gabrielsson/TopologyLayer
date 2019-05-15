@@ -50,12 +50,10 @@ void reduction_step(const Cocycle &c,\
 			IMPORTANT: assumes that X has been initialized
 		f - filtration
 		MAXDIM - maximum homology dimension
-	OUTPUTS: vector of vectors of tensors - t
-	 t[k] is list of two tensors - homology in dimension k
-	 t[k][0] is float32 tensor with barcode
-	 t[k][1] is int32 tensor with critical simplices indices
+	OUTPUTS: vector of tensors - t
+	 t[k] is float32 tensor with barcode for dimension k
 */
- std::vector<std::vector<torch::Tensor>> persistence_forward(SimplicialComplex &X, torch::Tensor f, int MAXDIM) {
+std::vector<torch::Tensor> persistence_forward(SimplicialComplex &X, torch::Tensor &f, int MAXDIM) {
 
    // extend filtration
    X.extend(f);
@@ -96,23 +94,23 @@ void reduction_step(const Cocycle &c,\
  	 // t[k][1] is int32 tensor with critical simplices indices
 
 		// convert output to tensors
-		std::vector<std::vector<torch::Tensor>> ret(MAXDIM+1); // return array
+		std::vector<torch::Tensor> ret(MAXDIM+1); // return array
 		for (int k = 0; k < MAXDIM+1; k++) {
-			ret[k] = std::vector<torch::Tensor>(2);
 			// TODO: can figure this out directly from X.ncells
 			int Nk = persistence_diagram[k].size(); // number of bars in dimension k
-			ret[k][0] = torch::empty({Nk,2},
+			// allocate return tensor
+			ret[k] = torch::empty({Nk,2},
 				torch::TensorOptions().dtype(torch::kFloat32).layout(torch::kStrided).requires_grad(true));
-			ret[k][1] = torch::empty({Nk,2},
-				torch::TensorOptions().dtype(torch::kInt32).layout(torch::kStrided).requires_grad(false));
-			// put barcode in return tensors
+			// allocate critical indices
+			X.backprop_lookup[k].resize(Nk);
+			// put barcode in return tensor and save critical indices
 			for (int j = 0; j < Nk; j++) {
 				// birth-death values
-				(ret[k][0][j].data<float>())[0] = (float) persistence_diagram[k][j].birth;
-				(ret[k][0][j].data<float>())[1] = (float) persistence_diagram[k][j].death;
+				(ret[k][j].data<float>())[0] = (float) persistence_diagram[k][j].birth;
+				(ret[k][j].data<float>())[1] = (float) persistence_diagram[k][j].death;
 				// birth-death indices
-				(ret[k][1][j].data<int>())[0] = (int) persistence_diagram[k][j].birth_index;
-				(ret[k][1][j].data<int>())[1] = (int) persistence_diagram[k][j].death_index;
+				X.backprop_lookup[k][j] = {persistence_diagram[k][j].birth_index,
+																		persistence_diagram[k][j].death_index};
 			}
 		}
 
@@ -133,7 +131,7 @@ OUTPUT:
 	grad_f - gradient w.r.t. original function
 */
 torch::Tensor persistence_backward(
- SimplicialComplex &X, std::vector<std::vector<torch::Tensor>> grad_res) {
+ SimplicialComplex &X, std::vector<torch::Tensor> &grad_res) {
 
 	 int N = X.ncells[0]; // number of cells in X
 	 torch::Tensor grad_f = torch::zeros({N},
@@ -147,16 +145,16 @@ torch::Tensor persistence_backward(
 	for (int k = 0; k < NDIMS; k++) {
 
 		// number of bars in dimension k
-		int Nk = grad_res[k][0].size(0);
+		int Nk = grad_res[k].size(0);
 
 
 		// loop over bars in dim k barcode
 		for (int j = 0; j < Nk; j++) {
 			// get pointers to filtration indices and pointers
-			int *filtind = grad_res[k][1][j].data<int>();
-			float *grad = grad_res[k][0][j].data<float>();
+			// int *filtind = grad_res[k][j].data<int>();
+			float *grad = grad_res[k][j].data<float>();
 
-			int bi = filtind[0];
+			int bi = X.backprop_lookup[k][j][0];
 			// check for non-infinite bar
 			if (bi != -1) {
 				// get birth cell
@@ -167,7 +165,7 @@ torch::Tensor persistence_backward(
 				grad_f_data[i] += grad[0];
 			}
 
-			int di = filtind[1];
+			int di = X.backprop_lookup[k][j][1];
 			// check for non-infinite bar
 			if (di != -1) {
 				// get death cell

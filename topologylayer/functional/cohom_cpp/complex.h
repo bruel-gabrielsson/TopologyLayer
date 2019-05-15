@@ -24,9 +24,6 @@ class SimplicialComplex{
     // number of cells in each dimension
     std::vector<int> ncells;
 
-    // discrete time filtration on cells
-    std::vector<size_t> filtration;
-
     // holds the permutation on cells that gives filtration order
     std::vector<size_t> filtration_perm;
 
@@ -35,14 +32,16 @@ class SimplicialComplex{
     // holds filtration information
     std::vector<std::pair<float, int>> full_function;
 
-
-
-    // for backpropagation lookup
-    // holds the critical simplex for each cell
-    // for levelset, will be vector of vectors with 1 entry each
-    // for rips, will be vector of vectors with 2 entries each
-    // for cech, will be vector of vectors with variable entries
-    std::vector<std::vector<size_t>> backprop_lookup;
+    /*
+    for backpropagation lookup
+    holds the critical simplex for each birth and death
+    for levelset, will be vector of vectors with 1 entry each
+    for rips, will be vector of vectors with 2 entries each
+    for cech, will be vector of vectors with variable entries
+    backprop_lookup[k][j][0] is critical simplex of birth of bar j in dim k
+    backprop_lookup[k][j][1] is critical simplex of death of bar j in dim k
+    */
+    std::vector<std::vector<std::vector<int>>> backprop_lookup;
 
     // hold boundary matrix of complex
     std::vector<Cocycle> bdr;
@@ -64,6 +63,9 @@ class SimplicialComplex{
 
     // print number of cells in each dim
     void printDims();
+
+    // print critical indices
+    void printCritInds();
 
     // pre-allocate vectors once cell list has been completed.
     void initialize();

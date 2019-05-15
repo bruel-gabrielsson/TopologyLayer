@@ -29,6 +29,14 @@ void SimplicialComplex::printDims() {
 	}
 }
 
+void SimplicialComplex::printCritInds() {
+	for (auto dgm : backprop_lookup){
+		for (auto v : dgm) {
+			py::print(v);
+		}
+	}
+}
+
 void SimplicialComplex::printFunctionMap() {
 	for (int i = 0; i < function_map.size(); i++) {
 		py::print(i, function_map[i]);
@@ -46,9 +54,7 @@ void SimplicialComplex::initialize() {
     // to call after complex is built.
 
     // allocate vectors
-    filtration.reserve(cells.size());
     filtration_perm.reserve(cells.size());
-    backprop_lookup.reserve(cells.size());
     full_function.reserve(cells.size());
     function_map.reserve(cells.size());
 
@@ -67,6 +73,10 @@ void SimplicialComplex::initialize() {
 		}
 		++ncells[sdim]; // increment ncells in appropriate dimension
 	}
+
+	// allocate backprop_lookup
+	backprop_lookup.resize(maxdim);
+	// TODO: if we know how many pairs there are, we can pre-allocate everything
 
 	// inialize boundary
 	bdr.reserve(indx);
@@ -106,6 +116,8 @@ void SimplicialComplex::printBoundary() {
 		c.print();
 	}
 }
+
+
 
 // TODO: figure out how to use template with PyBind...
 //template <typename T>

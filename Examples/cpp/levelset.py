@@ -15,6 +15,15 @@ def sum_finite(d):
     return torch.sum(diff[inds])
 
 
+# apparently there is some overhead the first time backward is called.
+# we'll just get it over with now.
+n = 20
+y = torch.rand(n, dtype=torch.float).requires_grad_(True)
+layer1 = LevelSetLayer1Dnew(n, False)
+dgm, issublevel = layer1(y)
+p = sum_finite(dgm[0])
+p.backward()
+
 n = 100
 y = torch.rand(n, dtype=torch.float).requires_grad_(True)
 print("1D complexes n = %d" % n)
@@ -43,12 +52,12 @@ p = sum_finite(dgm[0])
 t0 = time.time()
 p.backward()
 ta = time.time() - t0
-print("\nnew backward= %f sec" % ta)
+print("\nnew backward = %f sec" % ta)
 p = sum_finite(dgm2[0])
 t0 = time.time()
 p.backward()
 tb = time.time() - t0
-print("old backward= %f sec" % tb)
+print("old backward = %f sec" % tb)
 print("factor improvement = %f" % (tb/ta))
 
 size = (28,28)
@@ -79,12 +88,12 @@ p = sum_finite(dgm[0])
 t0 = time.time()
 p.backward()
 ta = time.time() - t0
-print("\nnew backward= %f sec" % ta)
+print("\nnew backward = %f sec" % ta)
 p = sum_finite(dgm2[0])
 t0 = time.time()
 p.backward()
 tb = time.time() - t0
-print("old backward= %f sec" % tb)
+print("old backward = %f sec" % tb)
 print("factor improvement = %f" % (tb/ta))
 # print dgm
 # print dgm2

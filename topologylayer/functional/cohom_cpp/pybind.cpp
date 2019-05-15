@@ -17,6 +17,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   .def("sortedOrder", &SimplicialComplex::sortedOrder)
   .def("printFiltration", &SimplicialComplex::printFiltration)
   .def("printFunctionMap", &SimplicialComplex::printFunctionMap)
+  .def("printCritInds", &SimplicialComplex::printCritInds)
   .def("printDims", &SimplicialComplex::printDims)
   .def("printBoundary", &SimplicialComplex::printBoundary)
   .def("printCells", &SimplicialComplex::printComplex);

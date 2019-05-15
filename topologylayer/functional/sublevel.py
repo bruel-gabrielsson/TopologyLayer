@@ -5,7 +5,6 @@ import torch
 from torch.autograd import Variable, Function
 from .cohom_cpp import SimplicialComplex, persistenceForward, persistenceBackward
 
-# TODO: just move inds into complex storage
 class SubLevelSetDiagram(Function):
     """
     Compute sub-level set persistence on a space
@@ -17,16 +16,13 @@ class SubLevelSetDiagram(Function):
     @staticmethod
     def forward(ctx, X, f, maxdim):
         ret = persistenceForward(X, f, maxdim)
-        dgms = [x[0] for x in ret]
-        inds = [x[1] for x in ret]
         ctx.X = X
-        ctx.inds = inds
-        return tuple(dgms)
+        return tuple(ret)
 
     @staticmethod
     def backward(ctx, *grad_dgms):
+        # print(grad_dgms)
         X = ctx.X
-        inds = ctx.inds
-        grad_ret = [[grad_dgms[i], inds[i]] for i in range(len(inds))]
+        grad_ret = list(grad_dgms)
         grad_f = persistenceBackward(X, grad_ret)
         return None, grad_f, None
