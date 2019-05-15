@@ -24,7 +24,6 @@ class SubLevelSetDiagram(Function):
 
     @staticmethod
     def backward(ctx, *grad_dgms):
-        print(grad_dgms)
         X = ctx.X
         inds = ctx.inds
         grad_ret = [[grad_dgms[i], inds[i]] for i in range(len(inds))]
