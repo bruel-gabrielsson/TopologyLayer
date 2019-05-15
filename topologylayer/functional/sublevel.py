@@ -15,6 +15,7 @@ class SubLevelSetDiagram(Function):
     """
     @staticmethod
     def forward(ctx, X, f, maxdim):
+        f = f.view(-1,1)
         ret = persistenceForward(X, f, maxdim)
         ctx.X = X
         return tuple(ret)
@@ -25,4 +26,4 @@ class SubLevelSetDiagram(Function):
         X = ctx.X
         grad_ret = list(grad_dgms)
         grad_f = persistenceBackward(X, grad_ret)
-        return None, grad_f, None
+        return None, grad_f.view(-1,1), None

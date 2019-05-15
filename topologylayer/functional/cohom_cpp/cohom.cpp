@@ -158,9 +158,9 @@ torch::Tensor persistence_backward(
 			// check for non-infinite bar
 			if (bi != -1) {
 				// get birth cell
-				auto ci = X.filtration_perm[bi];
+				// auto ci = X.filtration_perm[bi];
 				// find critical vertex
-				auto i = X.function_map[ci];
+				auto i = X.function_map[bi];
 				// add gradient to critical vertex.
 				grad_f_data[i] += grad[0];
 			}
@@ -169,9 +169,9 @@ torch::Tensor persistence_backward(
 			// check for non-infinite bar
 			if (di != -1) {
 				// get death cell
-				auto ci = X.filtration_perm[di];
+				// auto ci = X.filtration_perm[di];
 				// find critical vertex
-				auto i = X.function_map[ci];
+				auto i = X.function_map[di];
 				// add gradient to critical vertex.
 				grad_f_data[i] += grad[1];
 			}
