@@ -5,6 +5,7 @@ import torch
 from torch.autograd import Variable, Function
 from .cohom_cpp import SimplicialComplex, persistenceForward, persistenceBackward
 
+# TODO: just move inds into complex storage
 class SubLevelSetDiagram(Function):
     """
     Compute sub-level set persistence on a space

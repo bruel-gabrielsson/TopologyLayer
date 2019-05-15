@@ -1,25 +1,90 @@
+from __future__ import print_function
 from topologylayer.nn.levelset_cpp import LevelSetLayer1D as LevelSetLayer1Dnew
+from topologylayer.nn.levelset_cpp import LevelSetLayer2D as LevelSetLayer2Dnew
 from topologylayer.nn.levelset import LevelSetLayer1D as LevelSetLayer1Dold
+from topologylayer.nn.levelset import LevelSetLayer as LevelSetLayer2Dold
 
 import torch
 import time
+import numpy as np
+
+
+def sum_finite(d):
+    diff = d[:,0] - d[:,1]
+    inds = diff < np.inf
+    return torch.sum(diff[inds])
+
 
 n = 100
-y = torch.rand(n, dtype=torch.float)
+y = torch.rand(n, dtype=torch.float).requires_grad_(True)
+print("1D complexes n = %d" % n)
 
 t0 = time.time()
 layer1 = LevelSetLayer1Dnew(n, False)
-print time.time() - t0
+ta = time.time() - t0
+print("\nnew construction = %f sec" % ta)
 t0 = time.time()
 layer2 = LevelSetLayer1Dold(n)
-print time.time() - t0
+tb = time.time() - t0
+print("old construction = %f sec" % tb)
+print("factor improvement = %f" % (tb/ta))
 
 t0 = time.time()
 dgm, issublevel = layer1(y)
-print time.time() - t0
+ta = time.time() - t0
+print("\nnew forward = %f sec" % ta)
 t0 = time.time()
 dgm2, issublevel2 = layer2(y)
-print time.time() - t0
+tb = time.time() - t0
+print("old forward = %f sec" % tb)
+print("factor improvement = %f" % (tb/ta))
 
+p = sum_finite(dgm[0])
+t0 = time.time()
+p.backward()
+ta = time.time() - t0
+print("\nnew backward= %f sec" % ta)
+p = sum_finite(dgm2[0])
+t0 = time.time()
+p.backward()
+tb = time.time() - t0
+print("old backward= %f sec" % tb)
+print("factor improvement = %f" % (tb/ta))
+
+size = (28,28)
+x = torch.rand(*size, dtype=torch.float).requires_grad_(True)
+print("\n\n2D complexes size =", size)
+
+t0 = time.time()
+layer1 = LevelSetLayer2Dnew(size, sublevel=False)
+ta = time.time() - t0
+print("\nnew construction = %f sec" % ta)
+t0 = time.time()
+layer2 = LevelSetLayer2Dold(size)
+tb = time.time() - t0
+print("old construction = %f sec" % tb)
+print("factor improvement = %f" % (tb/ta))
+
+t0 = time.time()
+dgm, issublevel = layer1(x.view(-1))
+ta = time.time() - t0
+print("\nnew forward = %f sec" % ta)
+t0 = time.time()
+dgm2, issublevel2 = layer2(x.view(-1))
+tb = time.time() - t0
+print("old forward  = %f sec" % tb)
+print("factor improvement = %f" % (tb/ta))
+
+p = sum_finite(dgm[0])
+t0 = time.time()
+p.backward()
+ta = time.time() - t0
+print("\nnew backward= %f sec" % ta)
+p = sum_finite(dgm2[0])
+t0 = time.time()
+p.backward()
+tb = time.time() - t0
+print("old backward= %f sec" % tb)
+print("factor improvement = %f" % (tb/ta))
 # print dgm
 # print dgm2
