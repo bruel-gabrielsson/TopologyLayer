@@ -11,6 +11,8 @@ def penalized_ls(y, X, lam, penalty, verbose=False, lr=1e-1, maxiter=100):
     then runs maxiter iterations of GD
     """
     betals = np.linalg.lstsq(X, y, rcond=1e-4)[0]
+    if penalty is None:
+        return betals
     beta = torch.autograd.Variable(torch.tensor(betals, dtype=torch.float).view(-1,1), requires_grad=True)
     Xt = torch.tensor(X, dtype=torch.float)
     yt = torch.tensor(y, dtype=torch.float).view(-1,1)
@@ -32,6 +34,46 @@ def penalized_ls(y, X, lam, penalty, verbose=False, lr=1e-1, maxiter=100):
             print ("[Iter %d] [penalty: %f] [mse : %f] [loss : %f]" % (i, pen.item(), mse.item(), loss.item()))
 
     return beta.detach().numpy().flatten()
+
+
+def get_mse(beta0, beta1, n=10000):
+    p = len(beta0)
+    X = np.random.randn(n,p)
+    y0 = X.dot(beta0)
+    y1 = X.dot(beta1)
+    return np.mean(np.power(y0 - y1,2))
+
+
+def get_backward_error(beta0, beta1):
+    return np.sum(np.power(beta0 - beta1, 2))/np.sum(np.power(beta0, 2))
+
+
+def choose_best_lam(beta0, y, X, lams, pen):
+    mses = []
+    bes = []
+    for lam in lams:
+        beta1 = penalized_ls(y, X, lam, pen)
+        mses.append(get_mse(beta0, beta1))
+        bes.append(get_backward_error(beta0, beta1))
+    ind = np.argmin(mses)
+    return lams[ind], mses[ind], bes[ind]
+
+
+def gen_mse_be(beta0, ns, lams, pen, sigma=0.05, ntrials=10):
+    l = []
+    mse = []
+    be = []
+    for n in ns:
+        for trial in range(ntrials):
+            X, y = generate_problem(beta0, n, 0.05)
+            ln, msen, ben = choose_best_lam(beta0, y, X, lams, pen)
+            l.append(ln)
+            mse.append(msen)
+            be.append(ben)
+    l = np.array(l).reshape(-1,ntrials)
+    mse = np.array(mse).reshape(-1,ntrials)
+    be = np.array(be).reshape(-1,ntrials)
+    return l, mse, be
 
 
 def run_trials(beta0, n, sigma, lam, pen, ntrials=100, maxiter=100):

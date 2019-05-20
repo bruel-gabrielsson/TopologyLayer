@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 from topologylayer.nn import *
 from util import penalized_ls, run_trials, run_trials_ols, get_stats, gen_snr_stats, gen_dim_stats
+from util import gen_mse_be
 from penalties import NormLoss
 
 
@@ -38,45 +39,45 @@ lpen1 = NormLoss(p=1) # L1 penalty
 lpen2 = NormLoss(p=2) # L2 penalty
 
 # run regularization trials
-sigma = 0.1
-lams = np.logspace(-3, 0, 10)
+sigma = 0.05
+lams = lams = np.logspace(-4,1,20)
 ns = np.arange(25, 145, 10)
 
 
-def save_csvs(problem, pen, mses, qs, lamopt):
-    fname = 'results/alpha_' + problem + '_mses_' + pen + '.csv'
-    np.savetxt(fname, mses, delimiter=',')
-    fname = 'results/alpha_' + problem + '_qs_' + pen + '.csv'
-    np.savetxt(fname, qs, delimiter=',')
-    fname = 'results/alpha_' + problem + '_lam_' + pen + '.csv'
-    np.savetxt(fname, lamopt, delimiter=',')
+def save_csvs(problem, pen, lam, mse, be):
+    fname = 'results2/alpha_' + problem + '_mses_' + pen + '.csv'
+    np.savetxt(fname, mse, delimiter=',')
+    fname = 'results2/alpha_' + problem + '_bes_' + pen + '.csv'
+    np.savetxt(fname, be, delimiter=',')
+    fname = 'results2/alpha_' + problem + '_lam_' + pen + '.csv'
+    np.savetxt(fname, lam, delimiter=',')
 
 
 problem = '123'
 beta0 = generate_rips_problem([1., 2., 3.], p)
-np.savetxt('results/alpha_' + problem + '_beta0.csv', beta0, delimiter=',')
-mses, qs, lamopt = gen_dim_stats(beta0, ns, sigma, lams, tpen1, ntrials=100, maxiter=200, ncv=50)
-save_csvs(problem, 'tpen1', mses, qs, lamopt)
-mses, qs, lamopt = gen_dim_stats(beta0, ns, sigma, lams, tpen2, ntrials=100, maxiter=200, ncv=50)
-save_csvs(problem, 'tpen2', mses, qs, lamopt)
-mses, qs, lamopt = gen_dim_stats(beta0, ns, sigma, lams, None, ntrials=100, maxiter=200, ncv=50)
-save_csvs(problem, 'ols', mses, qs, lamopt)
-mses, qs, lamopt = gen_dim_stats(beta0, ns, sigma, lams, lpen1, ntrials=100, maxiter=200, ncv=50)
-save_csvs(problem, 'lpen1', mses, qs, lamopt)
-mses, qs, lamopt = gen_dim_stats(beta0, ns, sigma, lams, lpen2, ntrials=100, maxiter=200, ncv=50)
-save_csvs(problem, 'lpen2', mses, qs, lamopt)
+np.savetxt('results2/alpha_' + problem + '_beta0.csv', beta0, delimiter=',')
+lam, mse, be = gen_mse_be(beta0, ns, lams, tpen1, sigma=sigma)
+save_csvs(problem, 'tpen1', lam, mse, be)
+lam, mse, be = gen_mse_be(beta0, ns, lams, tpen2, sigma=sigma)
+save_csvs(problem, 'tpen2', lam, mse, be)
+lam, mse, be = gen_mse_be(beta0, ns, lams, None, sigma=sigma)
+save_csvs(problem, 'ols', lam, mse, be)
+lam, mse, be = gen_mse_be(beta0, ns, lams, lpen1, sigma=sigma)
+save_csvs(problem, 'lpen1', lam, mse, be)
+lam, mse, be = gen_mse_be(beta0, ns, lams, lpen2, sigma=sigma)
+save_csvs(problem, 'lpen2', lam, mse, be)
 
 
 problem = '101'
 beta0 = generate_rips_problem([-1., 0., 1.], p)
-np.savetxt('results/alpha_' + problem + '_beta0.csv', beta0, delimiter=',')
-mses, qs, lamopt = gen_dim_stats(beta0, ns, sigma, lams, tpen1, ntrials=100, maxiter=200, ncv=50)
-save_csvs(problem, 'tpen1', mses, qs, lamopt)
-mses, qs, lamopt = gen_dim_stats(beta0, ns, sigma, lams, tpen2, ntrials=100, maxiter=200, ncv=50)
-save_csvs(problem, 'tpen2', mses, qs, lamopt)
-mses, qs, lamopt = gen_dim_stats(beta0, ns, sigma, lams, None, ntrials=100, maxiter=200, ncv=50)
-save_csvs(problem, 'ols', mses, qs, lamopt)
-mses, qs, lamopt = gen_dim_stats(beta0, ns, sigma, lams, lpen1, ntrials=100, maxiter=200, ncv=50)
-save_csvs(problem, 'lpen1', mses, qs, lamopt)
-mses, qs, lamopt = gen_dim_stats(beta0, ns, sigma, lams, lpen2, ntrials=100, maxiter=200, ncv=50)
-save_csvs(problem, 'lpen2', mses, qs, lamopt)
+np.savetxt('results2/alpha_' + problem + '_beta0.csv', beta0, delimiter=',')
+lam, mse, be = gen_mse_be(beta0, ns, lams, tpen1, sigma=sigma)
+save_csvs(problem, 'tpen1', lam, mse, be)
+lam, mse, be = gen_mse_be(beta0, ns, lams, tpen2, sigma=sigma)
+save_csvs(problem, 'tpen2', lam, mse, be)
+lam, mse, be = gen_mse_be(beta0, ns, lams, None, sigma=sigma)
+save_csvs(problem, 'ols', lam, mse, be)
+lam, mse, be = gen_mse_be(beta0, ns, lams, lpen1, sigma=sigma)
+save_csvs(problem, 'lpen1', lam, mse, be)
+lam, mse, be = gen_mse_be(beta0, ns, lams, lpen2, sigma=sigma)
+save_csvs(problem, 'lpen2', lam, mse, be)

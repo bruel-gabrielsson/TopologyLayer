@@ -55,7 +55,7 @@ def alpha_filtration(x, maxdim=2):
             for face in itertools.combinations(s, dim+1):
                 # get filtration value for face
                 vface = 0.
-                for i, j in itertools.combinations(s, 2):
+                for i, j in itertools.combinations(face, 2):
                     vface = max(vface, np.linalg.norm(x[i] - x[j]))
                 simplices.append((list(face), vface))
     return d.Filtration(simplices)

@@ -44,7 +44,7 @@ def init_tri_complex(width, height):
     # fill in higher-d - cells
     for s in faces:
         # simplices
-        for dim in range(0, 2):
+        for dim in range(0, 3):
             # loop over faces
             for face in itertools.combinations(s, dim+1):
                 simplices.append(np.sort(list(face)))
