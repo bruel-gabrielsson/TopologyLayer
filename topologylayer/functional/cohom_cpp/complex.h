@@ -64,6 +64,9 @@ class SimplicialComplex{
     // print number of cells in each dim
     void printDims();
 
+    // get number of pairs for homology in dimension dim
+    int numPairs(int dim);
+
     // print critical indices
     void printCritInds();
 

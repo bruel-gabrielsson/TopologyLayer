@@ -117,6 +117,12 @@ void SimplicialComplex::printBoundary() {
 	}
 }
 
+// in dim 0, number of bars is number of vertices
+// in dim k, number of bars is number that don't kill something one dim down.
+// in dim 1, need to account for infinite dim0 bar
+int SimplicialComplex::numPairs(int dim) {
+	return (dim == 0) ? ncells[0] : ncells[dim] - this->numPairs(dim-1) + ((dim == 1) ? 1 : 0);
+}
 
 
 // TODO: figure out how to use template with PyBind...

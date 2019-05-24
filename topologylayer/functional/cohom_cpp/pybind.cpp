@@ -20,6 +20,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   .def("printCritInds", &SimplicialComplex::printCritInds)
   .def("printDims", &SimplicialComplex::printDims)
   .def("printBoundary", &SimplicialComplex::printBoundary)
+  .def("numPairs", &SimplicialComplex::numPairs)
   .def("printCells", &SimplicialComplex::printComplex);
   m.def("persistenceForward", &persistence_forward);
   m.def("persistenceBackward", &persistence_backward);
