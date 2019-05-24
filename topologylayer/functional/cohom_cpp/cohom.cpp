@@ -6,9 +6,14 @@
 
 #include "cohom.h"
 
-void reduction_step(const Cocycle &c,\
+void reduction_step(SimplicialComplex &X,\
+		 const size_t i,\
      std::vector<Cocycle> &Z,\
-     Barcode &partial_diagram) {
+     std::vector<torch::Tensor> &diagram,\
+		 std::vector<int> &nbars) {
+
+	 // get cocycle
+	 Cocycle c = X.bdr[i];
 
    // perform single reduction step with cocycle x
    bool flag = false;
@@ -30,16 +35,32 @@ void reduction_step(const Cocycle &c,\
 
    // cocycle was closed
    if(flag){
-     // add assertion that it exists
-     partial_diagram[pivot->index].close(c.index);
+     // add persistence pair to diagram.
+
+		 // get birth and death indices
+		 size_t bindx = pivot->index;
+		 size_t dindx = c.index;
+		 // get birth dimension
+		 size_t hdim = X.bdr[bindx].dim();
+
+		 // get location in diagram
+		 size_t j = nbars[hdim]++;
+
+		 // put births and deaths in diagram.
+		 (diagram[hdim][j].data<float>())[0] = (float) X.full_function[bindx].first;
+		 (diagram[hdim][j].data<float>())[1] = (float) X.full_function[dindx].first;
+
+		 // put birth/death indices of bar in X.backprop_lookup
+		 X.backprop_lookup[hdim][j] = {(int) bindx, (int) dindx};
+
+		 // delete reduced column from active cocycles
      // stupid translation from reverse to iterator
      Z.erase(std::next(pivot).base());
    } else {
      //  cocycle opened
-     // TODO: check indexing!
-     auto i = c.index;
-     partial_diagram[i] = Interval(i);
-     Z.emplace_back(Cocycle(i));
+		 size_t bindx = c.index;
+		 // add active cocycle
+     Z.emplace_back(Cocycle(bindx));
    }
  }
 
@@ -63,58 +84,53 @@ std::vector<torch::Tensor> persistence_forward(SimplicialComplex &X, torch::Tens
    // empty vector of active cocycles
    std::vector<Cocycle> Z;
 
-   // to store barcode
-   Barcode partial_diagram;
+	 // initialize reutrn diagram
+	 std::vector<torch::Tensor> diagram(MAXDIM+1); // return array
+	 for (int k = 0; k < MAXDIM+1; k++) {
+		 int Nk = X.numPairs(k); // number of bars in dimension k
+		 // allocate return tensor
+		 diagram[k] = torch::empty({Nk,2},
+			 torch::TensorOptions().dtype(torch::kFloat32).layout(torch::kStrided).requires_grad(true));
+		 // allocate critical indices
+		 // TODO: do this in intialization since number of pairs is deterministic
+		 X.backprop_lookup[k].resize(Nk);
+	 }
+	 // keep track of how many pairs we've put in diagram
+	 std::vector<int> nbars(MAXDIM+1);
+	 for (int k = 0; k < MAXDIM+1; k++) {
+		 nbars[k] = 0;
+	 }
 
-   for (auto i : X.filtration_perm ) {
-     reduction_step(X.bdr[i], Z, partial_diagram);
+	 // go through reduction algorithm
+   for (size_t i : X.filtration_perm ) {
+     reduction_step(X, i, Z, diagram, nbars);
    }
 
-   // return things!
+	 // add infinite bars using removing columns in Z
+	 // backprop_lookup death index = -1,
+	 // death time is std::numeric_limits<float>::infinity()
+	 // while (!(Z.isempty())){
+	 for (auto pivot  = Z.begin(); pivot != Z.end();  ++pivot) {
+		 // Cocycle pivot = Z.pop();
+		 // get birth index
+		 size_t bindx = pivot->index;
+		 // get birth dimension
+		 size_t hdim = X.bdr[bindx].dim();
 
-	 // old way of doing things
-	 std::map<int,std::vector<Interval>> persistence_diagram;
-	 // fill in barcode - this will be changed to a tensor
-		for(auto it = partial_diagram.begin(); it!=partial_diagram.end(); ++it){
-			int  bindx = it->first;
-			auto I = it->second;
-			if(I.death_index==-1){
-				persistence_diagram[X.bdr[bindx].dim()].emplace_back(
-					Interval(I.birth_index, I.death_index, X.full_function[I.birth_index].first,std::numeric_limits<float>::infinity()));
-			}
-			else{
-				persistence_diagram[X.bdr[bindx].dim()].emplace_back(
-					Interval(I.birth_index, I.death_index, X.full_function[I.birth_index].first,X.full_function[I.death_index].first));
-			}
-		}
+		 // get location in diagram
+		 size_t j = nbars[hdim]++;
 
-		// return type will be a list of lists of tensors
- 	 // t[k] is list of two tensors - homology in dimension k
- 	 // t[k][0] is float32 tensor with barcode
- 	 // t[k][1] is int32 tensor with critical simplices indices
+		 // put births and deaths in diagram.
+		 (diagram[hdim][j].data<float>())[0] = (float) X.full_function[bindx].first;
+		 (diagram[hdim][j].data<float>())[1] = std::numeric_limits<float>::infinity();
 
-		// convert output to tensors
-		std::vector<torch::Tensor> ret(MAXDIM+1); // return array
-		for (int k = 0; k < MAXDIM+1; k++) {
-			// TODO: can figure this out directly from X.ncells
-			int Nk = persistence_diagram[k].size(); // number of bars in dimension k
-			// allocate return tensor
-			ret[k] = torch::empty({Nk,2},
-				torch::TensorOptions().dtype(torch::kFloat32).layout(torch::kStrided).requires_grad(true));
-			// allocate critical indices
-			X.backprop_lookup[k].resize(Nk);
-			// put barcode in return tensor and save critical indices
-			for (int j = 0; j < Nk; j++) {
-				// birth-death values
-				(ret[k][j].data<float>())[0] = (float) persistence_diagram[k][j].birth;
-				(ret[k][j].data<float>())[1] = (float) persistence_diagram[k][j].death;
-				// birth-death indices
-				X.backprop_lookup[k][j] = {persistence_diagram[k][j].birth_index,
-																		persistence_diagram[k][j].death_index};
-			}
-		}
+		 // put birth/death indices of bar in X.backprop_lookup
+		 X.backprop_lookup[hdim][j] = {(int) bindx, -1};
 
-   return ret;
+	 }
+
+
+   return diagram;
  }
 
 

@@ -12,9 +12,11 @@ typedef std::map<int,Interval> Barcode;
 
 // perform reduction step on active cocycles Z
 // with cocycle x
-void reuction_step(const Cocycle &x,\
-     std::vector<Cocycle> &Z,\
-     Barcode partial_diagram);
+void reuction_step(SimplicialComplex &X,\
+    const size_t i,\
+    std::vector<Cocycle> &Z,\
+    std::vector<torch::Tensor> &diagram,\
+ 	std::vector<int> &nbars);
 
 std::vector<torch::Tensor> persistence_forward(
     SimplicialComplex &X, torch::Tensor &f, int MAXDIM);
