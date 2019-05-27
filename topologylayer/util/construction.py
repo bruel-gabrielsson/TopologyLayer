@@ -26,3 +26,16 @@ def unique_simplices(faces, dim):
             s.append(cell)
 
     return s
+
+
+def clique_complex(n, d):
+    """
+    Create d-skeleton of clique complex on n vertices
+    """
+    s = SimplicialComplex()
+    # loop over dimension
+    for k in range(d+1):
+        # loop over combinations
+        for cell in combinations(range(n), k+1):
+            s.append(list(cell))
+    return s

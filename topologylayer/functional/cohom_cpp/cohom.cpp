@@ -68,16 +68,13 @@ void reduction_step(SimplicialComplex &X,\
 /*
 	INPUTS:
 		X - simplicial complex
-			IMPORTANT: assumes that X has been initialized
-		f - filtration
+			IMPORTANT: assumes that X has been initialized, and filtration has been extended
 		MAXDIM - maximum homology dimension
 	OUTPUTS: vector of tensors - t
 	 t[k] is float32 tensor with barcode for dimension k
 */
-std::vector<torch::Tensor> persistence_forward(SimplicialComplex &X, torch::Tensor &f, int MAXDIM) {
+std::vector<torch::Tensor> persistence_forward(SimplicialComplex &X, int MAXDIM) {
 
-   // extend filtration
-   X.extend(f);
    // produce sort permutation on X
    X.sortedOrder();
 
@@ -116,6 +113,7 @@ std::vector<torch::Tensor> persistence_forward(SimplicialComplex &X, torch::Tens
 		 size_t bindx = pivot->index;
 		 // get birth dimension
 		 size_t hdim = X.bdr[bindx].dim();
+		 if (hdim > MAXDIM) { continue; }
 
 		 // get location in diagram
 		 size_t j = nbars[hdim]++;
@@ -126,7 +124,6 @@ std::vector<torch::Tensor> persistence_forward(SimplicialComplex &X, torch::Tens
 
 		 // put birth/death indices of bar in X.backprop_lookup
 		 X.backprop_lookup[hdim][j] = {(int) bindx, -1};
-
 	 }
 
 
@@ -140,9 +137,7 @@ INPUTS:
 		IMPORTANT: assumes that X has been initialized
 	grad_res - vector of vectors of tensors
 	same as input format:
-	grad_res[k] is vector of two tensors
-	grad_res[k][0] is float32 tensor of gradient of births/deaths in dimension k
-	grad_res[k][1] is same int32 tensor of critical simplex indices
+	grad_res[k] is float32 tensor of gradient of births/deaths in dimension k
 OUTPUT:
 	grad_f - gradient w.r.t. original function
 */
@@ -195,5 +190,82 @@ torch::Tensor persistence_backward(
 	}
 
 	 return grad_f;
+}
 
+
+/*
+INPUTS:
+	X - simplicial complex
+		IMPORTANT: assumes that X has been initialized
+	y - coordinate positions
+	grad_res - vector of vectors of tensors
+		same as input format:
+		grad_res[k] is float32 tensor of gradient of births/deaths in dimension k
+OUTPUT:
+	grad_y - gradient of coordinate positions y
+*/
+torch::Tensor persistence_backward_flag(
+ SimplicialComplex &X,
+ torch::Tensor &y,
+ std::vector<torch::Tensor> &grad_res) {
+
+	 int N = y.size(0); // number of points
+	 int D = y.size(1);
+	 torch::Tensor grad_y = torch::zeros({N, D},
+		 torch::TensorOptions().dtype(torch::kFloat32).layout(torch::kStrided));
+	// pointer to data
+	//float *grad_y_data = grad_y.data<float>();
+
+	int NDIMS = grad_res.size();
+
+	// loop over homology dimensions
+	for (int k = 0; k < NDIMS; k++) {
+
+		// number of bars in dimension k
+		int Nk = grad_res[k].size(0);
+
+
+		// loop over bars in dim k barcode
+		for (int j = 0; j < Nk; j++) {
+			// get pointers to filtration indices and pointers
+			// int *filtind = grad_res[k][j].data<int>();
+			float *grad = grad_res[k][j].data<float>();
+
+			// get index of birth
+			int bi = X.backprop_lookup[k][j][0];
+			// check for non-infinite bar
+			if (bi != -1) {
+				// check that birth dim is > 0
+				if (X.full_function[bi].second > 0) {
+					// get birth cell
+					// find critical edge
+					auto edge = X.function_map[bi] ;
+					// produce unit vector along edge
+					torch::Tensor dy = y[edge[0]] - y[edge[1]];
+					dy /= torch::norm(dy);
+					// add gradient to critical vertex.
+					grad_y[edge[0]] += grad[0] * dy;
+					grad_y[edge[1]] -= grad[0] * dy;
+				}
+			}
+
+			int di = X.backprop_lookup[k][j][1];
+			// check for non-infinite bar
+			if (di != -1) {
+				// get death cell
+				// auto ci = X.filtration_perm[di];
+				// find critical vertex
+				auto edge = X.function_map[di];
+				// produce unit vector along edge
+				torch::Tensor dy = y[edge[0]] - y[edge[1]];
+				// TODO: check for zero norm.
+				dy /= torch::norm(dy);
+				// add gradient to critical vertex.
+				grad_y[edge[0]] += grad[1] * dy;
+				grad_y[edge[1]] -= grad[1] * dy;
+			}
+		}
+	}
+
+	 return grad_y;
 }

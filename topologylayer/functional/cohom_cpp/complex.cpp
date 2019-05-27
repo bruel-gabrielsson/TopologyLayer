@@ -141,14 +141,16 @@ void SimplicialComplex::extend(torch::Tensor f) {
 
 
 // extend filtration on 1-cells to filtraiton on all cells
-void SimplicialComplex::extend_flag(torch::Tensor f) {
+// input:
+// 			x - N x dim tensor of positions
+void SimplicialComplex::extend_flag(torch::Tensor x) {
 	const size_t N(cells.size());
 	full_function.resize(N);
 	function_map.resize(N);
 
 	for (size_t i = 0; i < N; i++) {
 
-		if (cells[i].size() == 0) {
+		if (cells[i].size() == 1) {
 			// if 0-dim cell, filtration time is 0
 			full_function[i] = std::pair<float, int>((float) 0.0, 0);
 			function_map[i] = {0};
@@ -157,10 +159,10 @@ void SimplicialComplex::extend_flag(torch::Tensor f) {
 			float max_f = 0.0;
 			for (auto it1 = cells[i].begin(); it1 < cells[i].end(); ++it1) {
 				for (auto it2 = cells[i].begin(); it2 < it1; ++it2) {
-					float d12 = *(torch::norm(f[*it1] - f[*it2]).data<float>());
+					float d12 = *(torch::norm(x[*it1] - x[*it2]).data<float>());
 					if (d12 > max_f) {
 						max_f = d12;
-						function_map[i] = {*it1, *it2};
+						function_map[i] = {*it2, *it1}; // sorted order
 					}
 				}
 				full_function[i] = std::pair<float,int>(max_f, cells[i].size()-1);

@@ -22,5 +22,5 @@ class RipsLayer(nn.Module):
 
     def forward(self, x):
         dgm = self.fnobj.apply(x, self.rmax, self.maxdim, self.verbose)
-        dgms = tuple(remove_filler(dgm[i], -1) for i in range(self.maxdim+1))
+        dgms = tuple(remove_filler(dgm[i], -np.inf) for i in range(self.maxdim+1))
         return dgms, True

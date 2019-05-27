@@ -16,7 +16,8 @@ class SubLevelSetDiagram(Function):
     @staticmethod
     def forward(ctx, X, f, maxdim):
         f = f.view(-1,1)
-        ret = persistenceForward(X, f, maxdim)
+        X.extendFloat(f)
+        ret = persistenceForward(X, maxdim)
         ctx.X = X
         return tuple(ret)
 
