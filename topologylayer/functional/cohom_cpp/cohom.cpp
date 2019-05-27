@@ -109,9 +109,9 @@ std::vector<torch::Tensor> persistence_forward(SimplicialComplex &X, torch::Tens
 	 // add infinite bars using removing columns in Z
 	 // backprop_lookup death index = -1,
 	 // death time is std::numeric_limits<float>::infinity()
-	 // while (!(Z.isempty())){
+	 // while (!(Z.empty())){
 	 for (auto pivot  = Z.begin(); pivot != Z.end();  ++pivot) {
-		 // Cocycle pivot = Z.pop();
+		 // Cocycle pivot = Z.pop_back();
 		 // get birth index
 		 size_t bindx = pivot->index;
 		 // get birth dimension
@@ -176,7 +176,7 @@ torch::Tensor persistence_backward(
 				// get birth cell
 				// auto ci = X.filtration_perm[bi];
 				// find critical vertex
-				auto i = X.function_map[bi];
+				auto i = X.function_map[bi][0];
 				// add gradient to critical vertex.
 				grad_f_data[i] += grad[0];
 			}
@@ -187,7 +187,7 @@ torch::Tensor persistence_backward(
 				// get death cell
 				// auto ci = X.filtration_perm[di];
 				// find critical vertex
-				auto i = X.function_map[di];
+				auto i = X.function_map[di][0];
 				// add gradient to critical vertex.
 				grad_f_data[i] += grad[1];
 			}

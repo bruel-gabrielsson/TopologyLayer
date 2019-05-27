@@ -125,7 +125,6 @@ int SimplicialComplex::numPairs(int dim) {
 }
 
 
-// TODO: figure out how to use template with PyBind...
 //template <typename T>
 //void SimplicialComplex::extend(std::vector<T> &f) {}
 void SimplicialComplex::extend(torch::Tensor f) {
@@ -135,10 +134,42 @@ void SimplicialComplex::extend(torch::Tensor f) {
 		float *f2 = f.data<float>(); // pointer to data
     for (size_t i = 0; i < N; i++ ){
         int element = *std::max_element(cells[i].begin(),cells[i].end(),[&f2](int i1, int i2){return f2[i1]<f2[i2];}); // < if lower
-        full_function[i] = std::pair<double,int>(f2[element], cells[i].size()-1);
-        function_map[i] = element;
+        full_function[i] = std::pair<float,int>(f2[element], cells[i].size()-1);
+        function_map[i] = {element};
     }
 }
+
+
+// extend filtration on 1-cells to filtraiton on all cells
+void SimplicialComplex::extend_flag(torch::Tensor f) {
+	const size_t N(cells.size());
+	full_function.resize(N);
+	function_map.resize(N);
+
+	for (size_t i = 0; i < N; i++) {
+
+		if (cells[i].size() == 0) {
+			// if 0-dim cell, filtration time is 0
+			full_function[i] = std::pair<float, int>((float) 0.0, 0);
+			function_map[i] = {0};
+		} else {
+			// if higher-dim simplex, filtration time is latest edge
+			float max_f = 0.0;
+			for (auto it1 = cells[i].begin(); it1 < cells[i].end(); ++it1) {
+				for (auto it2 = cells[i].begin(); it2 < it1; ++it2) {
+					float d12 = *(torch::norm(f[*it1] - f[*it2]).data<float>());
+					if (d12 > max_f) {
+						max_f = d12;
+						function_map[i] = {*it1, *it2};
+					}
+				}
+				full_function[i] = std::pair<float,int>(max_f, cells[i].size()-1);
+			}
+		}
+
+	}
+}
+
 
 void SimplicialComplex::sortedOrder() {
     filtration_perm.resize(full_function.size());

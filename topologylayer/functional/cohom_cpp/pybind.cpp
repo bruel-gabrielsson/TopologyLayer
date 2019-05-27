@@ -13,6 +13,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   .def("append", &SimplicialComplex::append)
   .def("initialize", &SimplicialComplex::initialize)
   .def("extendFloat", &SimplicialComplex::extend)
+  .def("extendFlag", &SimplicialComplex::extend_flag)
   .def("sortedOrder", &SimplicialComplex::sortedOrder)
   .def("printFiltration", &SimplicialComplex::printFiltration)
   .def("printFunctionMap", &SimplicialComplex::printFunctionMap)

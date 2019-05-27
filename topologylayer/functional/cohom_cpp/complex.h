@@ -28,7 +28,9 @@ class SimplicialComplex{
     std::vector<size_t> filtration_perm;
 
     // holds map to critical cell
-    std::vector<size_t> function_map;
+    // function_map[j] = [...] face that causes cell j to appear
+    std::vector<std::vector<size_t>> function_map;
+
     // holds filtration information
     std::vector<std::pair<float, int>> full_function;
 
@@ -74,10 +76,12 @@ class SimplicialComplex{
     void initialize();
 
     // extend filtration on 0-cells to filtration on all cells
-    // TODO: figure out how to use template with PyBind...
     // template <typename T>
     // void extend(std::vector<T> &f);
     void extend(torch::Tensor f);
+
+    // extend filtration on 1-cells to filtration on all cells
+    void extend_flag(torch::Tensor f);
 
     // fill in filtration order
     void sortedOrder();
