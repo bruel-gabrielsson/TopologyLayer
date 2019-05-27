@@ -2,7 +2,6 @@
 
 #include "cohom.h"
 #include "complex.h"
-// #include "demo.h"
 
 namespace py = pybind11;
 
