@@ -1,5 +1,6 @@
 from ..functional.sublevel import SubLevelSetDiagram
 from ..functional.cohom_cpp import SimplicialComplex
+from topologylayer.util.construction import unique_simplices
 
 import torch
 import torch.nn as nn
@@ -7,25 +8,7 @@ import numpy as np
 from scipy.spatial import Delaunay
 import itertools
 
-import itertools
 
-# function to get unique values
-# this is disgusting and slow
-def unique(list0):
-
-    # intilize a null list
-    unique_list = []
-    # traverse for all elements
-    for x in list0:
-        # check if exists in unique_list or not
-        in_list = False
-        for y in unique_list:
-            if np.array_equal(x, y):
-                in_list = True
-                break
-        if not in_list:
-            unique_list.append(x)
-    return unique_list
 
 def init_tri_complex(width, height):
     """
@@ -39,20 +22,7 @@ def init_tri_complex(width, height):
 
     # creation of a complex for calculations
     tri = Delaunay(grid_axes.reshape([-1, 2]))
-    faces = tri.simplices.copy()
-    simplices = []
-    # fill in higher-d - cells
-    for s in faces:
-        # simplices
-        for dim in range(0, 3):
-            # loop over faces
-            for face in itertools.combinations(s, dim+1):
-                simplices.append(np.sort(list(face)))
-    simplices = unique(simplices)
-    s = SimplicialComplex()
-    for c in simplices:
-        s.append(list(c))
-    return s
+    return unique_simplices(tri.simplices, 2)
 
 
 def init_freudenthal_2d(width, height):
