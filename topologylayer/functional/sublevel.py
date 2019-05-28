@@ -15,7 +15,8 @@ class SubLevelSetDiagram(Function):
     """
     @staticmethod
     def forward(ctx, X, f, maxdim):
-        f = f.view(-1,1)
+        ctx.retshape = f.shape
+        f = f.view(-1)
         X.extendFloat(f)
         ret = persistenceForward(X, maxdim)
         ctx.X = X
@@ -25,6 +26,7 @@ class SubLevelSetDiagram(Function):
     def backward(ctx, *grad_dgms):
         # print(grad_dgms)
         X = ctx.X
+        retshape = ctx.retshape
         grad_ret = list(grad_dgms)
         grad_f = persistenceBackward(X, grad_ret)
-        return None, grad_f.view(-1,1), None
+        return None, grad_f.view(retshape), None
