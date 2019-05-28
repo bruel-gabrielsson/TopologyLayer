@@ -1,9 +1,12 @@
 # TopologyLayer
 
-Requires Dionysus https://mrzv.org/software/dionysus2/
+This repository contains a Python package that implements PyTorch-compatible persistent homology layers, as well as featurization of the output.
 
+For an introduction to this topic, see our ArXiV paper. [TODO: link and cite]
 
-## Example Installation (Conda)
+# Get Started
+
+## Environment Configuration (Conda)
 
 First, create a conda environment
 ```bash
@@ -13,7 +16,6 @@ source activate toplayer
 
 Now, add dependencies
 ```bash
-pip install --verbose dionysus
 conda install numpy scipy matplotlib
 conda install pytorch=1.0 torchvision -c pytorch
 ```
@@ -23,11 +25,7 @@ If you haven't already, clone the repository
 git clone git@github.com:bruel-gabrielsson/TopologyLayer.git
 ```
 
-You should now be able to run the example file
-```bash
-cd <path_to_TopologyLayer>/Examples
-python examples.py
-```
+You are now ready to compile extensions
 
 ## Compiling C++ Extensions
 
@@ -39,7 +37,7 @@ source activate toplayer
 conda install pytorch=1.0 torchvision -c pytorch
 ```
 
-Use python `setuptools`
+Compilation uses python's `setuptools` module.
 
 To complile:
 ```bash
@@ -48,12 +46,23 @@ python setup.py install --record files.txt
 ```
 You should now have the module available in your environment.
 
-To delete (while testing):
+To delete all installed files (from TopologyLayer home directory):
 ```bash
 xargs rm -rf < files.txt # files.txt from setup
 rm -rf build dist topologylayer.egg-info
 rm files.txt
 ```
+
+
+# High-Level Interface
+
+For easiest use, high-level classes are provided for Pytorch compatibility.
+
+The output of the diagram layers is not just a Pytorch tensor, but a tuple, which consists of
+* A tuple (again) containing the persistence barcodes
+* A flag indicating if the filtration was sub or super-levelset.
+
+The recommended usage is to just pass the return type directly into a feature layer, which will take care of parsing.
 
 ## Barcode Return Types
 
@@ -71,26 +80,17 @@ All bars are returned (including bars of length 0).  It will be assumed that a f
 
 In general, barcodes will be immediately passed to some featurization layer.
 
-
-
-
-# High-Level Interface
-
-For easiest use, high-level classes are provided for Pytorch compatibility.
-
-The output of the diagram layers is not just a Pytorch tensor, but a `dgminfo` object, which currently consists of the diagram pytorch tensor and a boolean flag indicating the filtration direction, which is necessary for featurization
-
-The recommended usage is to just pass `dgminfo` directly into a feature layer, which will take care of parsing, since the representation may change in the future.
+## Persistence Layers
 
 ### LevelSetLayer
 
 A `LevelSetLayer` takes in an image (of fixed dimension), and outputs a super-level set persistence diagram tensor.
 
 ```python
-from topologylayer.nn.levelset import LevelSetLayer
+from topologylayer.nn import LevelSetLayer2D
 import torch
 
-layer = LevelSetLayer((3,3))
+layer = LevelSetLayer2D((3,3))
 x = torch.tensor([[2, 1, 1],[1, 0.5, 1],[1, 1, 1]], dtype=torch.float)
 dgm, issublevelset = layer(x.view(-1))
 ```
@@ -103,43 +103,42 @@ corresponding to the persistence diagrams
 
 ### RipsLayer
 
-A `RipsLayer` takes in a point cloud, and outputs the persistence diagram of the Rips complex.
+A `RipsLayer` takes in a point cloud (an $n\times d$ tensor), and outputs the persistence diagram of the Rips complex.
 
 ```python
 from topologylayer.nn import RipsLayer
 
-layer = RipsLayer(maxdim=1, rmax=np.inf, verbose=True)
+layer = RipsLayer(maxdim=1)
 dgm, issublevelset = layer(x)
 ```
 
 ### AlphaLayer
-An `AlphaLayer` takes in a point cloud, and outputs the persistence diagram of the Alpha complex.
+An `AlphaLayer` takes in a point cloud (an $n\times d$ tensor), and outputs the persistence diagram of the weak Alpha complex.
 
 ```python
 from topologylayer.nn import AlphaLayer
 
-layer = AlphaLayer(maxdim=1, verbose=True)
+layer = AlphaLayer(maxdim=1)
 dgm, issublevelset = layer(x)
 ```
 
 The `AlphaLayer` is similar to the Rips layer, but potentially much faster for low-dimensions.
-We use the convention that edges in the alpha complex have filtration value equal to the distance between the two points they connect.  This differs from the typical definition, where filtration values are halved.  We also use a flag complex on the 1-skeleton, which differs from the typical definition.
 
-Notes
-* 0-dimensional homology should agree with `RipsLayer`
-* 1-dimensional homology is 2*Cech homology
-* 2+ dimensional homology - no exact relation with Rips/Cech
+Note that a weak Alpha complex is not an Alpha complex.  It is better thought of as the restriction of the Rips complex to the Delaunay Triangulation of the space.
+
+## Featurization Layers
+Persistence diagrams are hard to work with directly in machine learning.  We implement some easy to work with featurizations.
 
 ### SumBarcodeLengths
 
 A `SumBarcodeLengths` layer takes in a `dgminfo` object, and sums up the lengths of the persistence pairs, ignoring infinite bars, and handling dimension padding
 
 ```python
-from topologylayer.nn.levelset import LevelSetLayer
+from topologylayer.nn import LevelSetLayer2D
 from topologylayer.nn.features import SumBarcodeLengths
 import torch
 
-layer = LevelSetLayer((28,28), maxdim=1)
+layer = LevelSetLayer2D((28,28), maxdim=1)
 sumlayer = SumBarcodeLengths()
 
 x = torch.rand(28,28)
@@ -157,48 +156,24 @@ A `TopKBarcodeLengths` layer takes in a `dgminfo` object, and returns the top k 
 A `BarcodePolyFeature` layer takes in a `dgminfo` object, and returns a polynomial feature as in Adcock Carlsson and Carlsson.  Parameters are homology dimension `dim`, and exponents `a` and `b`
 
 
-# Lower-Level Information
+# Examples
 
-## Diagram Basics
 
-The output of a `TopologyLayer` is a `pytorch.tensor` of size `d x ndp x 2` where `d` is the maximum homology dimension, `ndp` is the maximum number of diagram points in any homology dimension, and the remaining index is for birth and death times.  If a homology dimension has fewer than `ndp` pairs, then the remaining indices will be filled with `-1`.
+# (Deprecated) Dionysus Driver
 
-This output tensor can be manipulated to construct various featurizations of persistent homology (note: do this using Pytorch functionality to be able to backprop).  Examples can be found in `top_utils.py`
+There are also functions that call Dionysus (https://mrzv.org/software/dionysus2/) for the persistence calculations.
+There functions are superseded by the PyTorch Extensions, but may still be used.
 
-### Internal Details
-
-The output of `computePersistence` is a set of persistence diagrams, `dgm`, which is a dictionary of numpy arrays of dimension `n x 4`, indexed by homology dimension, where `n` is the number of persistence pairs, and the indices are explained in the following table
-| index  | 0  |  1 |  2 | 3  |
-|:-:|:-:|:-:|:-:|:-:|
-| information  |  birth time |  death time | birth vertex  |  death vertex |
-
-The birth and death times are used to construct the output of a `TopologyLayer`, and the birth and death vertices are cached in the `forward` method for gradient computations.
-
-## Super-level set persistence layer
-
-The `DiagramLayer` in the `DiagramlayerTopLevel` submodule is used for super-level set persistence.
-```python
-from DiagramlayerTopLevel import Diagramlayer as LevelSetLayer
-```
-The input to this layer will be a single-channel image, and a `filtration`, which encodes the space.
-
-```python
-# image grid
-width, height = 28, 28
-axis_x = np.arange(0, width)
-axis_y = np.arange(0, height)
-grid_axes = np.array(np.meshgrid(axis_x, axis_y))
-grid_axes = np.transpose(grid_axes, (1, 2, 0))
-# creation of a filtration
-from scipy.spatial import Delaunay
-tri = Delaunay(grid_axes.reshape([-1, 2]))
-faces = tri.simplices.copy()
-filtration = LevelSetLayer().init_filtration(faces)
+```bash
+source activate toplayer
+pip install --verbose dionysus
 ```
 
-To apply the `LevelSetLayer` to an image `x`, use
+The corresponding imports are
 ```python
-toplayer = LevelSetLayer()
-dgm = toplayer(x, filtration)
+from topologylayer.nn.levelset import LevelSetLayer1D
+from topologylayer.nn.levelset import LevelSetLayer as LevelSetLayer2D
+from topologylayer.nn.alpha import AlphaLayer
+from topologylayer.nn.rips import RipsLayer
 ```
-`dgm` will be a pytorch tensor described in the Diagram Basics section.
+The return types should be the same as the extensions, but output may not be identical (zero-length bars are truncated).
