@@ -1,8 +1,9 @@
 import torch
 import torch.nn as nn
 import numpy as np
+from topologylayer.util.process import remove_zero_bars
 
-def get_start_end(dgminfo):
+def get_start_end(dgm, issublevel):
     """
     get start and endpoints of barcode pairs
     input:
@@ -11,7 +12,6 @@ def get_start_end(dgminfo):
             bool = false if diagram is of super-level set type
     output - start, end tensors of diagram
     """
-    dgm, issublevel = dgminfo
     if issublevel:
         # sub-level set filtration e.g. Rips
         start, end = dgm[:,0], dgm[:,1]
@@ -21,22 +21,22 @@ def get_start_end(dgminfo):
     return start, end
 
 
-def get_raw_barcode_lengths(dgminfo):
+def get_raw_barcode_lengths(dgm, issublevel):
     """
     get barcode lengths from barcode pairs
     no filtering
     """
-    start, end = get_start_end(dgminfo)
+    start, end = get_start_end(dgm, issublevel)
     lengths = end - start
     return lengths
 
 
-def get_barcode_lengths(dgminfo):
+def get_barcode_lengths(dgm, issublevel):
     """
     get barcode lengths from barcode pairs
     filter out infinite bars
     """
-    lengths = get_raw_barcode_lengths(dgminfo)
+    lengths = get_raw_barcode_lengths(dgm, issublevel)
     # remove infinite and irrelevant bars
     lengths[lengths == np.inf] = 0
     lengths[lengths != lengths] = 0
@@ -46,26 +46,32 @@ def get_barcode_lengths(dgminfo):
 class SumBarcodeLengths(nn.Module):
     """
     Layer that sums up lengths of barcode in persistence diagram
-
     ignores infinite bars, and padding
+    Options:
+        dim - bardocde dimension to sum over (defualt 0)
+
+    forward input:
+        (dgms, issub) tuple, passed from diagram layer
     """
-    def __init__(self):
+    def __init__(self, dim=0):
         super(SumBarcodeLengths, self).__init__()
+        self.dim=dim
 
     def forward(self, dgminfo):
-        lengths = get_barcode_lengths(dgminfo)
+        dgms, issublevel = dgminfo
+        lengths = get_barcode_lengths(dgms[self.dim], issublevel)
 
         # return the sum of the barcode lengths
         return torch.sum(lengths, dim=0)
 
 
-def get_barcode_lengths_means(dgminfo):
+def get_barcode_lengths_means(dgm, issublevel):
     """
     return lengths and means of barcode
 
     set irrelevant or infinite to zero
     """
-    start, end = get_start_end(dgminfo)
+    start, end = get_start_end(dgm, issublevel)
     lengths = end - start
     means = (end + start)/2
     # remove infinite and irrelvant bars
@@ -79,19 +85,29 @@ def get_barcode_lengths_means(dgminfo):
 class BarcodePolyFeature(nn.Module):
     """
     applies function
-    sum length^a * mean^b
+    sum length^p * mean^q
     over lengths and means of barcode
+    parameters:
+        dim - homology dimension to work over
+        p - exponent for lengths
+        q - exponent for means
+        remove_zero = Flag to remove zero-length bars (default=True)
     """
-    def __init__(self, dim, a, b):
+    def __init__(self, dim, p, q, remove_zero=True):
         super(BarcodePolyFeature, self).__init__()
         self.dim = dim
-        self.a   = a
-        self.b   = b
+        self.p = p
+        self.q = q
+        self.remove_zero = remove_zero
 
     def forward(self, dgminfo):
-        lengths, means = get_barcode_lengths_means(dgminfo)
+        dgms, issublevel = dgminfo
+        dgm = dgms[self.dim]
+        if self.remove_zero:
+            dgm = remove_zero_bars(dgm)
+        lengths, means = get_barcode_lengths_means(dgm, issublevel)
 
-        return torch.sum(torch.mul(torch.pow(lengths, self.a), torch.pow(means, self.b)))
+        return torch.sum(torch.mul(torch.pow(lengths, self.p), torch.pow(means, self.q)))
 
 
 def pad_k(t, k, pad=0.0):
@@ -125,7 +141,8 @@ class TopKBarcodeLengths(nn.Module):
         self.dim = dim
 
     def forward(self, dgminfo):
-        lengths = get_barcode_lengths(dgminfo)
+        dgms, issublevel = dgminfo
+        lengths = get_barcode_lengths(dgms[self.dim], issublevel)
 
         # sort lengths
         sortl, indl = torch.sort(lengths, descending=True)
@@ -149,7 +166,8 @@ class PartialSumBarcodeLengths(nn.Module):
         self.dim = dim
 
     def forward(self, dgminfo):
-        lengths = get_barcode_lengths(dgminfo)
+        dgms, issublevel = dgminfo
+        lengths = get_barcode_lengths(dgms[self.dim], issublevel)
 
         # sort lengths
         sortl, indl = torch.sort(lengths, descending=True)

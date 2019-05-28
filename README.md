@@ -82,85 +82,193 @@ If you're unfamiliar with persistence, it is probably easiest to get started by 
 
 ### LevelSetLayer
 
-A `LevelSetLayer` takes in an image (of fixed dimension), and outputs a super-level set persistence diagram tensor.
+A `LevelSetLayer` takes in a function on a fixed space, and outputs a super-level set persistence diagram tensor.  There are two specialized variants: `LevelSetLayer1D` and `LevelSetLayer2D` which operate on 1D and 2D grids.  
 
+`LevelSetLayer1D` only computes 0-dimensional persistence, since this is the only relevant barcode.
 ```python
-from topologylayer.nn import LevelSetLayer2D
+import torch
+from topologylayer.nn import LevelSetLayer1D, SumBarcodeLengths
+# creates a superlevel set layer on a 10-point line.
+layer = LevelSetLayer1D(size=10, sublevel=False)
+feat = SumBarcodeLengths(dim=0)
+y = torch.rand(10, dtype=torch.float).requires_grad_(True)
+p = feat(layer(y))
+```
+
+`LevelSetLayer2D` can compute either 0-dim or both 0-dim and 1-dim barcodes.  The defualt behavior is to use the freudenthal triangulation of a grid on the specified size, which can be modified using the `complex` input argument.
+```python
+from topologylayer.nn import LevelSetLayer2D, SumBarcodeLengths
 import torch
 
-layer = LevelSetLayer2D((3,3))
+layer = LevelSetLayer2D(size=(3,3), maxdim=1, sublevel=False)
 x = torch.tensor([[2, 1, 1],[1, 0.5, 1],[1, 1, 1]], dtype=torch.float)
-dgm, issublevelset = layer(x.view(-1))
+dgms, issublevelset = layer(x)
 ```
-Note that we pass in `x.view(-1)` - this is currently necessary for backpropagation to work.
 
-The above should give
-`dgm[0] = tensor([[2., -inf]])` and `dgm[1] = tensor([[1.0000, 0.5000]])`
-corresponding to the persistence diagrams
+The above should give two non-trivial bars (there will also be trivial bars listed)
+`dgms[0] = tensor([[2., -inf]])` and `dgms[1] = tensor([[1.0000, 0.5000]])`
+corresponding to the persistence diagrams.
+
+A generic `LevelSetLayer` can be used with arbitrary `SimplicialComplex` objects, which is useful to extend beyond 1 and 2-dimensional images.  Note that the complex must currently be acyclic for the computation to be correct.  The following example is on a star graph:
+```python
+from topologylayer import SimplicialComplex
+from topologylayer.nn import LevelSetLayer
+import torch
+
+cpx = SimplicialComplex()
+cpx.append([0])
+for i in range(1,5):
+    cpx.append([i])
+    cpx.append([0,i])
+
+layer = LevelSetLayer(cpx, maxdim=0, sublevel=True)
+y = torch.tensor([1,0,0,0,0], dtype=torch.float).requires_grad_(True)
+dgms, issublevel = layer(y)
+```
+Note that the function `y` has one value for each vertex in the space.
+`dgms[0]` should contain 3 bars of type `[0., 1.]`, one bar of type `[0., inf]` and one bar of type `[1., 1.]`.
 
 
 ### RipsLayer
 
-A `RipsLayer` takes in a point cloud (an $n\times d$ tensor), and outputs the persistence diagram of the Rips complex.
+A `RipsLayer` takes in a point cloud (an $n\times d$ tensor), and outputs the persistence diagram of the Rips complex.  The Rips layer assumes a fixed complex size `n`.
 
 ```python
+import torch
 from topologylayer.nn import RipsLayer
-
-layer = RipsLayer(maxdim=1)
-dgm, issublevelset = layer(x)
+n, d = 10, 2
+layer = RipsLayer(n, maxdim=1)
+x = torch.rand(n, d, dtype=torch.float).requires_grad_(True)
+dgms, issublevelset = layer(x)
 ```
 
 ### AlphaLayer
 An `AlphaLayer` takes in a point cloud (an $n\times d$ tensor), and outputs the persistence diagram of the weak Alpha complex.
 
 ```python
+import torch
 from topologylayer.nn import AlphaLayer
-
+n, d = 10, 2
 layer = AlphaLayer(maxdim=1)
-dgm, issublevelset = layer(x)
+x = torch.rand(n, d, dtype=torch.float).requires_grad_(True)
+dgms, issublevelset = layer(x)
 ```
 
-The `AlphaLayer` is similar to the Rips layer, but potentially much faster for low-dimensions.
+The `AlphaLayer` is similar to the Rips layer, but potentially much faster for low-dimensional computations.
 
 Note that a weak Alpha complex is not an Alpha complex.  It is better thought of as the restriction of the Rips complex to the Delaunay Triangulation of the space.
+
+### Rips and Alpha Layers in 1 Dimension
+
+These Layers can be used in 1 dimension.  However, make sure the input has shape $n\times 1$ and that `maxdim=0`.  Note that in this case, there is really no reason to use `RipsLayer` over `AlphaLayer`, since the diagrams should be identical.
+
+`RipsLayer` example
+```python
+import torch
+from topologylayer.nn import RipsLayer
+n, d = 10, 1
+layer = RipsLayer(n, maxdim=0)
+x = torch.rand(n, d, dtype=torch.float).requires_grad_(True)
+dgms, issublevelset = layer(x)
+```
+
+`AlphaLayer` example
+```python
+import torch
+from topologylayer.nn import AlphaLayer
+n, d = 10, 1
+layer = AlphaLayer(maxdim=0)
+x = torch.rand(n, d, dtype=torch.float).requires_grad_(True)
+dgms, issublevelset = layer(x)
+```
 
 ## Featurization Layers
 Persistence diagrams are hard to work with directly in machine learning.  We implement some easy to work with featurizations.
 
 ### SumBarcodeLengths
 
-A `SumBarcodeLengths` layer takes in a `dgminfo` object, and sums up the lengths of the persistence pairs, ignoring infinite bars, and handling dimension padding
+A `SumBarcodeLengths` layer takes the output of a diagram layer, and sums up the lengths of the persistence pairs in a given dimension, ignoring infinite bars.
 
 ```python
-from topologylayer.nn import LevelSetLayer2D
-from topologylayer.nn.features import SumBarcodeLengths
 import torch
+from topologylayer.nn import LevelSetLayer2D, SumBarcodeLengths
 
 layer = LevelSetLayer2D((28,28), maxdim=1)
-sumlayer = SumBarcodeLengths()
+sumlayer = SumBarcodeLengths(dim=1)
 
-x = torch.rand(28,28)
+x = torch.rand(28,28, dtype=torch.float).requires_grad_(True)
 dgminfo = layer(x)
 dlen = sumlayer(dgminfo)
 ```
 
 ### TopKBarcodeLengths
 
-A `TopKBarcodeLengths` layer takes in a `dgminfo` object, and returns the top k barcode lengths in a given homology dimension as a tensor, padding by 0 if necessary.  Parameters are `dim` and `k`
+A `TopKBarcodeLengths` layer takes in the output of a diagram layer, and returns the top `k` barcode lengths in a given homology dimension as a tensor, padding by 0 if necessary.  Parameters are `dim` and `k`
+```python
+import torch
+from topologylayer.nn import TopKBarcodeLengths, LevelSetLayer2D
+layer = LevelSetLayer2D(size=(10,10), sublevel=False)
+feat = TopKBarcodeLengths(dim=1, k=2)
+y = torch.rand(10,10, dtype=torch.float).requires_grad_(True)
+p = feat(layer(y))
+```
+the output should be a tensor of length 2.
 
 
 ### BarcodePolyFeature
 
-A `BarcodePolyFeature` layer takes in a `dgminfo` object, and returns a polynomial feature as in Adcock Carlsson and Carlsson.  Parameters are homology dimension `dim`, and exponents `a` and `b`
+A `BarcodePolyFeature` layer takes in the output of a diagram layer, and returns a polynomial feature as in Adcock, Carlsson, and Carlsson.  Parameters are homology dimension `dim`, and exponents `p` and `q`.  By defalut, all zero-length bars will be ignored.
+```python
+import torch
+from topologylayer.nn import BarcodePolyFeature, LevelSetLayer2D
+layer = LevelSetLayer2D(size=(10,10), sublevel=False)
+feat = BarcodePolyFeature(dim=0, p=1, q=1)
+y = torch.rand(10,10, dtype=torch.float).requires_grad_(True)
+p = feat(layer(y))
+```
 
+### PartialSumBarcodeLengths
+A `PartialSumBarcodeLengths` layer takes in the output of a diagram layer, and returns the sum of the barcode lengths in dimension `dim` skipping the first `skip` finite bars.
+```python
+import torch
+from topologylayer.nn import PartialSumBarcodeLengths, LevelSetLayer2D
+layer = LevelSetLayer2D(size=(10,10), sublevel=False)
+feat = PartialSumBarcodeLengths(dim=1, skip=2)
+y = torch.rand(10,10, dtype=torch.float).requires_grad_(True)
+p = feat(layer(y))
+```
 
-# Examples
+# Simplicial Complexes
+
+If you wish to create new high-level layers for your own purposes, it is useful to know the basics of constructing a simplicial complex.  The type made available is named `SimplicialComplex`
+
+### Construction
+
+Complex construction can be done in python by initializing an empty `SimplicialComplex` and using the `append` method to add simplices as lists of integers.
+
+```python
+from topologylayer import SimplicialComplex
+X = SimplicialComplex()
+# 0-simplices
+X.append([0])
+X.append([1])
+X.append([2])
+# 1-simplices
+X.append([0,1])
+X.append([1,2])
+X.append([0,2])
+# 2-simplices
+X.append([0,1,2])
+```
+__Warning:__ there are currently no checks to make sure a `SimplicialComplex` does not contain duplicate simplices, or that all faces are included.  Thus, one should be very careful to add all faces and do so exactly once.
+
+__Warning:__ the persistence computation currently assumes that the complex is acyclic at the end of the filtration in order to precompute the number of barcode pairs.
 
 
 # (Deprecated) Dionysus Driver
 
 There are also functions that call Dionysus (https://mrzv.org/software/dionysus2/) for the persistence calculations.
-There functions are superseded by the PyTorch Extensions, but may still be used.
+There functions are superseded by the PyTorch Extensions, but may still be used.  Note that initialization may differ slightly from the default layers.
 
 ```bash
 source activate toplayer

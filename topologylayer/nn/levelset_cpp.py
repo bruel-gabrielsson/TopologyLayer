@@ -9,6 +9,38 @@ from scipy.spatial import Delaunay
 import itertools
 
 
+class LevelSetLayer(nn.Module):
+    """
+    Level set persistence layer arbitrary simplicial complex
+    Parameters:
+        complex : SimplicialComplex
+        maxdim : maximum homology dimension (default 1)
+        sublevel : sub or superlevel persistence (default=True)
+
+    Note that the complex should be acyclic for the computation to be correct (currently)
+    """
+    def __init__(self, complex, maxdim=1, sublevel=True):
+        super(LevelSetLayer, self).__init__()
+        self.complex = complex
+        self.maxdim = maxdim
+        self.fnobj = SubLevelSetDiagram()
+        self.sublevel = sublevel
+
+        # make sure complex is initialized
+        self.complex.initialize()
+
+
+    def forward(self, f):
+        if self.sublevel:
+            dgms = self.fnobj.apply(self.complex, f, self.maxdim)
+            return dgms, True
+        else:
+            f = -f
+            dgms = self.fnobj.apply(self.complex, f, self.maxdim)
+            dgms = tuple(-dgm for dgm in dgms)
+            return dgms, False
+
+
 
 def init_tri_complex(width, height):
     """
@@ -98,7 +130,7 @@ def init_grid_2d(width, height):
     return s
 
 
-class LevelSetLayer2D(nn.Module):
+class LevelSetLayer2D(LevelSetLayer):
     """
     Level set persistence layer for 2D input
     Parameters:
@@ -111,34 +143,16 @@ class LevelSetLayer2D(nn.Module):
             "dumb" - self explanatory
     """
     def __init__(self, size, maxdim=1, sublevel=True, complex="freudenthal"):
-        super(LevelSetLayer2D, self).__init__()
-        self.size = size
-        self.maxdim = maxdim
-        self.fnobj = SubLevelSetDiagram()
-        self.sublevel = sublevel
-
-        # extract width and height
         width, height = size
-
+        tmpcomplex = None
         if complex == "freudenthal":
-            self.complex = init_freudenthal_2d(width, height)
+            tmpcomplex = init_freudenthal_2d(width, height)
         elif complex == "grid":
-            self.complex = init_grid_2d(width, height)
+            tmpcomplex = init_grid_2d(width, height)
         elif complex == "dumb":
-            self.complex = init_tri_complex(width, height)
-        self.complex.initialize()
-
-
-    def forward(self, f):
-        if self.sublevel:
-            dgms = self.fnobj.apply(self.complex, f, self.maxdim)
-            return dgms, True
-        else:
-            f = -f
-            dgms = self.fnobj.apply(self.complex, f, self.maxdim)
-            dgms = tuple(-dgm for dgm in dgms)
-            return dgms, False
-
+            tmpcomplex = init_tri_complex(width, height)
+        super(LevelSetLayer2D, self).__init__(tmpcomplex, maxdim=maxdim, sublevel=sublevel)
+        self.size = size
 
 
 def init_line_complex(p):
@@ -156,7 +170,7 @@ def init_line_complex(p):
     return s
 
 
-class LevelSetLayer1D(nn.Module):
+class LevelSetLayer1D(LevelSetLayer):
     """
     Level set persistence layer
     Parameters:
@@ -165,19 +179,8 @@ class LevelSetLayer1D(nn.Module):
     only returns H0
     """
     def __init__(self, size, sublevel=True):
-        super(LevelSetLayer1D, self).__init__()
-        self.size = size
-        self.fnobj = SubLevelSetDiagram()
-        self.complex = init_line_complex(size)
-        self.complex.initialize()
-        self.sublevel = sublevel
-
-    def forward(self, f):
-        if self.sublevel:
-            dgm, = self.fnobj.apply(self.complex, f, 0) # only 0 dim homology
-            return (dgm,), True
-        else:
-            f = -f
-            dgm, = self.fnobj.apply(self.complex, f, 0) # only 0 dim homology
-            dgm = -dgm
-            return (dgm,), False
+        super(LevelSetLayer1D, self).__init__(
+            init_line_complex(size),
+            maxdim=0,
+            sublevel=sublevel
+            )
