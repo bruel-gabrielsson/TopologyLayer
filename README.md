@@ -72,13 +72,11 @@ The output of extensions will be a tuple of `torch.float` tensors (one tensor fo
 dgms, issublevel = layer(x)
 ```
 
-`dgms[k]` is the k-dimensional barcode, where `dgms[k][j][0]` is the birth time of bar `j` and `dgms[k][j][1]` is the death time of bar `j`
-
-Note that this differs from the old method, where all diagrams had the same length (by adding padding), and were returned as a 3D tensor instead of a tuple of 2D tensors.
+`dgms[k]` is the k-dimensional barcode, where `dgms[k][j][0]` is the birth time of bar `j` and `dgms[k][j][1]` is the death time of bar `j`.
 
 All bars are returned (including bars of length 0).  It will be assumed that a featurization layer can choose to use or ignore these bars.
 
-In general, barcodes will be immediately passed to some featurization layer.
+If you're unfamiliar with persistence, it is probably easiest to get started by just passing a barcode into a featurization layer.
 
 ## Persistence Layers
 
