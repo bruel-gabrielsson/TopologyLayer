@@ -6,7 +6,17 @@ For an introduction to this topic, see our ArXiV paper. [TODO: link and cite]
 
 # Get Started
 
-## Environment Configuration (Conda)
+Dependencies: Python 2.7, numpy scipy, PyTorch 1.0
+
+## Installation using pip
+Assuming you have the listed dependencies and pip, you should be able to install.
+
+```bash
+pip install git+https://github.com/bruel-gabrielsson/TopologyLayer.git@cpp
+```
+
+
+## (Optional) Conda Environment Configuration
 
 First, create a conda environment
 ```bash
@@ -20,16 +30,22 @@ conda install numpy scipy matplotlib
 conda install pytorch=1.0 torchvision -c pytorch
 ```
 
+Now, you can install the TopologyLayer package.
+```bash
+pip install git+https://github.com/bruel-gabrielsson/TopologyLayer.git@cpp
+```
+
+
+## (Optional) Compiling C++ Extensions
+
+This section is primarily for those who wish to modify or contribute to the package.  We recommend you __do not__ install using `pip` as above, but do configure your environment to have the necessary dependencies.
+
 If you haven't already, clone the repository
 ```bash
 git clone git@github.com:bruel-gabrielsson/TopologyLayer.git
 ```
 
-You are now ready to compile extensions
-
-## Compiling C++ Extensions
-
-PyTorch tutorial [here](https://pytorch.org/tutorials/advanced/cpp_extension.html)
+You are now ready to compile extensions.  PyTorch tutorial on extensions [here](https://pytorch.org/tutorials/advanced/cpp_extension.html)
 
 *Important*: in environment, it seems like using the pytorch conda channel is important
 ```bash
@@ -39,12 +55,12 @@ conda install pytorch=1.0 torchvision -c pytorch
 
 Compilation uses python's `setuptools` module.
 
-To complile:
+To complile (from TopologyLayer home directory):
 ```bash
 source activate toplayer
 python setup.py install --record files.txt
 ```
-You should now have the module available in your environment.
+You should now have the package available in your environment.  You can run the above command any time you modify the source code, and the package on your path should update.
 
 To delete all installed files (from TopologyLayer home directory):
 ```bash
@@ -52,6 +68,7 @@ xargs rm -rf < files.txt # files.txt from setup
 rm -rf build dist topologylayer.egg-info
 rm files.txt
 ```
+This may be necessary if you need to refresh intermediate build files.
 
 
 # High-Level Interface
