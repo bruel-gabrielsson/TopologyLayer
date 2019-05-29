@@ -25,12 +25,4 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("persistenceForward", &persistence_forward);
   m.def("persistenceBackward", &persistence_backward);
   m.def("persistenceBackwardFlag", &persistence_backward_flag);
-  // m.def("forward", &lltm_forward, "LLTM forward");
-  // m.def("backward", &lltm_backward, "LLTM backward");
-  // m.def("testPrint", &testPrint);
-  // m.def("testDump", &testDump);
-  // m.def("testLoadFloat", &testLoadFloat);
-  // m.def("testLoadInt", &testLoadInt);
 }
-
-//   .def("extendDouble", &SimplicialComplex::extend<double>)
