@@ -152,7 +152,7 @@ Note that the function `y` has one value for each vertex in the space.
 
 ### RipsLayer
 
-A `RipsLayer` takes in a point cloud (an $n\times d$ tensor), and outputs the persistence diagram of the Rips complex.  The Rips layer assumes a fixed complex size `n`.
+A `RipsLayer` takes in a point cloud (an `n x d` tensor), and outputs the persistence diagram of the Rips complex.  The Rips layer assumes a fixed complex size `n`.
 
 ```python
 import torch
@@ -164,7 +164,7 @@ dgms, issublevelset = layer(x)
 ```
 
 ### AlphaLayer
-An `AlphaLayer` takes in a point cloud (an $n\times d$ tensor), and outputs the persistence diagram of the weak Alpha complex.
+An `AlphaLayer` takes in a point cloud (an `n x d` tensor), and outputs the persistence diagram of the weak Alpha complex.
 
 ```python
 import torch
@@ -181,7 +181,7 @@ Note that a weak Alpha complex is not an Alpha complex.  It is better thought of
 
 ### Rips and Alpha Layers in 1 Dimension
 
-These Layers can be used in 1 dimension.  However, make sure the input has shape $n\times 1$ and that `maxdim=0`.  Note that in this case, there is really no reason to use `RipsLayer` over `AlphaLayer`, since the diagrams should be identical.
+These Layers can be used in 1 dimension.  However, make sure the input has shape `n x 1` and that `maxdim=0`.  Note that in this case, there is really no reason to use `RipsLayer` over `AlphaLayer`, since the diagrams should be identical.
 
 `RipsLayer` example
 ```python
