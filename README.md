@@ -16,7 +16,7 @@ Dependencies:
 Assuming you have the listed dependencies and pip, you should be able to install.
 
 ```bash
-pip install git+https://github.com/bruel-gabrielsson/TopologyLayer.git@cpp
+pip install git+https://github.com/bruel-gabrielsson/TopologyLayer.git
 ```
 
 
@@ -36,7 +36,7 @@ conda install pytorch=1.0 torchvision -c pytorch
 
 Now, you can install the TopologyLayer package.
 ```bash
-pip install git+https://github.com/bruel-gabrielsson/TopologyLayer.git@cpp
+pip install git+https://github.com/bruel-gabrielsson/TopologyLayer.git
 ```
 
 
