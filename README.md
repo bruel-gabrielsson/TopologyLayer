@@ -2,11 +2,15 @@
 
 This repository contains a Python package that implements PyTorch-compatible persistent homology layers, as well as featurization of the output.
 
-For an introduction to this topic, see our ArXiV paper. [TODO: link and cite]
+For an introduction to this topic, see our preprint. [arxiv:1905.12200](https://arxiv.org/abs/1905.12200)
 
 # Get Started
 
-Dependencies: Python 2.7, numpy scipy, PyTorch 1.0
+Dependencies:
+* Python 2.7
+* numpy
+* scipy
+* PyTorch 1.0
 
 ## Installation using pip
 Assuming you have the listed dependencies and pip, you should be able to install.
