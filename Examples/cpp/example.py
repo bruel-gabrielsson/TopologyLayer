@@ -1,4 +1,5 @@
 from topologylayer.functional.cohom_cpp import SimplicialComplex, persistenceForward
+from topologylayer.util.process import remove_zero_bars
 import torch
 
 
@@ -37,11 +38,12 @@ s.initialize()
 # expect single H1 [0,2]
 f = torch.Tensor([2., 0., 0., 0., 0.])
 
+# extend filtration to simplical complex
+s.extendFloat(f)
+
 # compute persistence with MAXDIM=1
-ret = persistenceForward(s, f, 1) # doesn't crash!
+ret = persistenceForward(s, 1)
 
 for k in range(2):
     print "dimension %d bars" % k
-    print ret[k][0]
-    print "dimension %d indices" % k
-    print ret[k][1]
+    print remove_zero_bars(ret[k])
