@@ -59,3 +59,37 @@ class Levelset1dsub(unittest.TestCase):
             y.grad[0].item(),
             2.0,
             "unexpected gradient")
+
+
+class Levelset2dsuper(unittest.TestCase):
+    def test(self):
+        from topologylayer.nn import LevelSetLayer2D
+
+        # sublevel set
+        layer = LevelSetLayer2D(size=(3,3), maxdim=1, sublevel=False)
+        x = torch.tensor([[2, 1, 1],[1, 0.5, 1],[1, 1, 1]], dtype=torch.float).requires_grad_(True)
+
+        dgms, issub = layer(x)
+        self.assertEqual(
+            issub,
+            False,
+            "Expected superlevel set layer")
+        self.assertEqual(
+            torch.all(torch.eq(remove_zero_bars(dgms[0]),
+                        torch.tensor([[2., -np.inf]]))),
+            True,
+            "unexpected 0-dim barcode")
+        self.assertEqual(
+            torch.all(torch.eq(remove_zero_bars(dgms[1]),
+                        torch.tensor([[1., 0.5]]))),
+            True,
+            "unexpected 1-dim barcode")
+
+        d1 = remove_zero_bars(dgms[1])
+        p = d1[0,0] - d1[0,1]
+        p.backward()
+
+        self.assertEqual(
+            x.grad[1,1].item(),
+            -1.0,
+            "unexpected gradient")
