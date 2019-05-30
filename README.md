@@ -1,8 +1,26 @@
 # TopologyLayer
 
-Requires Dionysus https://mrzv.org/software/dionysus2/
+This repository contains a Python package that implements PyTorch-compatible persistent homology layers, as well as featurization of the output.
 
-## Example Installation (Conda)
+For an introduction to this topic, see our preprint. [arxiv:1905.12200](https://arxiv.org/abs/1905.12200)
+
+# Get Started
+
+Dependencies:
+* Python 2.7
+* numpy
+* scipy
+* PyTorch 1.0
+
+## Installation using pip
+Assuming you have the listed dependencies and pip, you should be able to install.
+
+```bash
+pip install git+https://github.com/bruel-gabrielsson/TopologyLayer.git
+```
+
+
+## (Optional) Conda Environment Configuration
 
 First, create a conda environment
 ```bash
@@ -12,63 +30,277 @@ source activate toplayer
 
 Now, add dependencies
 ```bash
-pip install --verbose dionysus
 conda install numpy scipy matplotlib
-conda install pytorch torchvision
+conda install pytorch=1.0 torchvision -c pytorch
 ```
+
+Now, you can install the TopologyLayer package.
+```bash
+pip install git+https://github.com/bruel-gabrielsson/TopologyLayer.git
+```
+
+
+## (Optional) Compiling C++ Extensions
+
+This section is primarily for those who wish to modify or contribute to the package.  We recommend you __do not__ install using `pip` as above, but do configure your environment to have the necessary dependencies.
 
 If you haven't already, clone the repository
 ```bash
 git clone git@github.com:bruel-gabrielsson/TopologyLayer.git
 ```
 
+You are now ready to compile extensions.  PyTorch tutorial on extensions [here](https://pytorch.org/tutorials/advanced/cpp_extension.html)
 
-You should now be able to run the example file
+*Important*: in environment, it seems like using the pytorch conda channel is important
 ```bash
-cd <path_to_TopologyLayer>/Examples
-python examples.py
+source activate toplayer
+conda install pytorch=1.0 torchvision -c pytorch
 ```
 
-## Diagram Basics
+Compilation uses python's `setuptools` module.
 
-The output of a `TopologyLayer` is a `pytorch.tensor` of size `d x ndp x 2` where `d` is the maximum homology dimension, `ndp` is the maximum number of diagram points in any homology dimension, and the remaining index is for birth and death times.  If a homology dimension has fewer than `ndp` pairs, then the remaining indices will be filled with `-1`.
+To complile (from TopologyLayer home directory):
+```bash
+source activate toplayer
+python setup.py install --record files.txt
+```
+You should now have the package available in your environment.  You can run the above command any time you modify the source code, and the package on your path should update.
 
-This output tensor can be manipulated to construct various featurizations of persistent homology (note: do this using Pytorch functionality to be able to backprop).  Examples can be found in `top_utils.py`
+To delete all installed files (from TopologyLayer home directory):
+```bash
+xargs rm -rf < files.txt # files.txt from setup
+rm -rf build dist topologylayer.egg-info
+rm files.txt
+```
+This may be necessary if you need to refresh intermediate build files.
 
-### Internal Details
 
-The output of `computePersistence` is a set of persistence diagrams, `dgm`, which is a dictionary of numpy arrays of dimension `n x 4`, indexed by homology dimension, where `n` is the number of persistence pairs, and the indices are explained in the following table
-| index  | 0  |  1 |  2 | 3  |
-|:-:|:-:|:-:|:-:|:-:|
-| information  |  birth time |  death time | birth vertex  |  death vertex |
+# High-Level Interface
 
-The birth and death times are used to construct the output of a `TopologyLayer`, and the birth and death vertices are cached in the `forward` method for gradient computations.
+For easiest use, high-level classes are provided for Pytorch compatibility.
 
-## Super-level set persistence layer
+The output of the diagram layers is not just a Pytorch tensor, but a tuple, which consists of
+* A tuple (again) containing the persistence barcodes
+* A flag indicating if the filtration was sub or super-levelset.
 
-The `DiagramLayer` in the `DiagramlayerTopLevel` submodule is used for super-level set persistence.
+The recommended usage is to just pass the return type directly into a feature layer, which will take care of parsing.
+
+## Barcode Return Types
+
+The output of extensions will be a tuple of `torch.float` tensors (one tensor for each homology dimension), and a flag indicating whether computation was sub-level set persistence.
+
 ```python
-from DiagramlayerTopLevel import Diagramlayer as LevelSetLayer
-```
-The input to this layer will be a single-channel image, and a `filtration`, which encodes the space.
-
-```python
-# image grid
-width, height = 28, 28
-axis_x = np.arange(0, width)
-axis_y = np.arange(0, height)
-grid_axes = np.array(np.meshgrid(axis_x, axis_y))
-grid_axes = np.transpose(grid_axes, (1, 2, 0))
-# creation of a filtration
-from scipy.spatial import Delaunay
-tri = Delaunay(grid_axes.reshape([-1, 2]))
-faces = tri.simplices.copy()
-filtration = LevelSetLayer().init_filtration(faces)
+dgms, issublevel = layer(x)
 ```
 
-To apply the `LevelSetLayer` to an image `x`, use
+`dgms[k]` is the k-dimensional barcode, where `dgms[k][j][0]` is the birth time of bar `j` and `dgms[k][j][1]` is the death time of bar `j`.
+
+All bars are returned (including bars of length 0).  It will be assumed that a featurization layer can choose to use or ignore these bars.
+
+If you're unfamiliar with persistence, it is probably easiest to get started by just passing a barcode into a featurization layer.
+
+## Persistence Layers
+
+### LevelSetLayer
+
+A `LevelSetLayer` takes in a function on a fixed space, and outputs a super-level set persistence diagram tensor.  There are two specialized variants: `LevelSetLayer1D` and `LevelSetLayer2D` which operate on 1D and 2D grids.  
+
+`LevelSetLayer1D` only computes 0-dimensional persistence, since this is the only relevant barcode.
 ```python
-toplayer = LevelSetLayer()
-dgm = toplayer(x, filtration)
+import torch
+from topologylayer.nn import LevelSetLayer1D, SumBarcodeLengths
+# creates a superlevel set layer on a 10-point line.
+layer = LevelSetLayer1D(size=10, sublevel=False)
+feat = SumBarcodeLengths(dim=0)
+y = torch.rand(10, dtype=torch.float).requires_grad_(True)
+p = feat(layer(y))
 ```
-`dgm` will be a pytorch tensor described in the Diagram Basics section.
+
+`LevelSetLayer2D` can compute either 0-dim or both 0-dim and 1-dim barcodes.  The defualt behavior is to use the freudenthal triangulation of a grid on the specified size, which can be modified using the `complex` input argument.
+```python
+from topologylayer.nn import LevelSetLayer2D, SumBarcodeLengths
+import torch
+
+layer = LevelSetLayer2D(size=(3,3), maxdim=1, sublevel=False)
+x = torch.tensor([[2, 1, 1],[1, 0.5, 1],[1, 1, 1]], dtype=torch.float)
+dgms, issublevelset = layer(x)
+```
+
+The above should give two non-trivial bars (there will also be trivial bars listed)
+`dgms[0] = tensor([[2., -inf]])` and `dgms[1] = tensor([[1.0000, 0.5000]])`
+corresponding to the persistence diagrams.
+
+A generic `LevelSetLayer` can be used with arbitrary `SimplicialComplex` objects, which is useful to extend beyond 1 and 2-dimensional images.  Note that the complex must currently be acyclic for the computation to be correct.  The following example is on a star graph:
+```python
+from topologylayer import SimplicialComplex
+from topologylayer.nn import LevelSetLayer
+import torch
+
+cpx = SimplicialComplex()
+cpx.append([0])
+for i in range(1,5):
+    cpx.append([i])
+    cpx.append([0,i])
+
+layer = LevelSetLayer(cpx, maxdim=0, sublevel=True)
+y = torch.tensor([1,0,0,0,0], dtype=torch.float).requires_grad_(True)
+dgms, issublevel = layer(y)
+```
+Note that the function `y` has one value for each vertex in the space.
+`dgms[0]` should contain 3 bars of type `[0., 1.]`, one bar of type `[0., inf]` and one bar of type `[1., 1.]`.
+
+
+### RipsLayer
+
+A `RipsLayer` takes in a point cloud (an `n x d` tensor), and outputs the persistence diagram of the Rips complex.  The Rips layer assumes a fixed complex size `n`.
+
+```python
+import torch
+from topologylayer.nn import RipsLayer
+n, d = 10, 2
+layer = RipsLayer(n, maxdim=1)
+x = torch.rand(n, d, dtype=torch.float).requires_grad_(True)
+dgms, issublevelset = layer(x)
+```
+
+### AlphaLayer
+An `AlphaLayer` takes in a point cloud (an `n x d` tensor), and outputs the persistence diagram of the weak Alpha complex.
+
+```python
+import torch
+from topologylayer.nn import AlphaLayer
+n, d = 10, 2
+layer = AlphaLayer(maxdim=1)
+x = torch.rand(n, d, dtype=torch.float).requires_grad_(True)
+dgms, issublevelset = layer(x)
+```
+
+The `AlphaLayer` is similar to the Rips layer, but potentially much faster for low-dimensional computations.
+
+Note that a weak Alpha complex is not an Alpha complex.  It is better thought of as the restriction of the Rips complex to the Delaunay Triangulation of the space.
+
+### Rips and Alpha Layers in 1 Dimension
+
+These Layers can be used in 1 dimension.  However, make sure the input has shape `n x 1` and that `maxdim=0`.  Note that in this case, there is really no reason to use `RipsLayer` over `AlphaLayer`, since the diagrams should be identical.
+
+`RipsLayer` example
+```python
+import torch
+from topologylayer.nn import RipsLayer
+n, d = 10, 1
+layer = RipsLayer(n, maxdim=0)
+x = torch.rand(n, d, dtype=torch.float).requires_grad_(True)
+dgms, issublevelset = layer(x)
+```
+
+`AlphaLayer` example
+```python
+import torch
+from topologylayer.nn import AlphaLayer
+n, d = 10, 1
+layer = AlphaLayer(maxdim=0)
+x = torch.rand(n, d, dtype=torch.float).requires_grad_(True)
+dgms, issublevelset = layer(x)
+```
+
+## Featurization Layers
+Persistence diagrams are hard to work with directly in machine learning.  We implement some easy to work with featurizations.
+
+### SumBarcodeLengths
+
+A `SumBarcodeLengths` layer takes the output of a diagram layer, and sums up the lengths of the persistence pairs in a given dimension, ignoring infinite bars.
+
+```python
+import torch
+from topologylayer.nn import LevelSetLayer2D, SumBarcodeLengths
+
+layer = LevelSetLayer2D((28,28), maxdim=1)
+sumlayer = SumBarcodeLengths(dim=1)
+
+x = torch.rand(28,28, dtype=torch.float).requires_grad_(True)
+dgminfo = layer(x)
+dlen = sumlayer(dgminfo)
+```
+
+### TopKBarcodeLengths
+
+A `TopKBarcodeLengths` layer takes in the output of a diagram layer, and returns the top `k` barcode lengths in a given homology dimension as a tensor, padding by 0 if necessary.  Parameters are `dim` and `k`
+```python
+import torch
+from topologylayer.nn import TopKBarcodeLengths, LevelSetLayer2D
+layer = LevelSetLayer2D(size=(10,10), sublevel=False)
+feat = TopKBarcodeLengths(dim=1, k=2)
+y = torch.rand(10,10, dtype=torch.float).requires_grad_(True)
+p = feat(layer(y))
+```
+the output should be a tensor of length 2.
+
+
+### BarcodePolyFeature
+
+A `BarcodePolyFeature` layer takes in the output of a diagram layer, and returns a polynomial feature as in Adcock, Carlsson, and Carlsson.  Parameters are homology dimension `dim`, and exponents `p` and `q`.  By defalut, all zero-length bars will be ignored.
+```python
+import torch
+from topologylayer.nn import BarcodePolyFeature, LevelSetLayer2D
+layer = LevelSetLayer2D(size=(10,10), sublevel=False)
+feat = BarcodePolyFeature(dim=0, p=1, q=1)
+y = torch.rand(10,10, dtype=torch.float).requires_grad_(True)
+p = feat(layer(y))
+```
+
+### PartialSumBarcodeLengths
+A `PartialSumBarcodeLengths` layer takes in the output of a diagram layer, and returns the sum of the barcode lengths in dimension `dim` skipping the first `skip` finite bars.
+```python
+import torch
+from topologylayer.nn import PartialSumBarcodeLengths, LevelSetLayer2D
+layer = LevelSetLayer2D(size=(10,10), sublevel=False)
+feat = PartialSumBarcodeLengths(dim=1, skip=2)
+y = torch.rand(10,10, dtype=torch.float).requires_grad_(True)
+p = feat(layer(y))
+```
+
+# Simplicial Complexes
+
+If you wish to create new high-level layers for your own purposes, it is useful to know the basics of constructing a simplicial complex.  The type made available is named `SimplicialComplex`
+
+### Construction
+
+Complex construction can be done in python by initializing an empty `SimplicialComplex` and using the `append` method to add simplices as lists of integers.
+
+```python
+from topologylayer import SimplicialComplex
+X = SimplicialComplex()
+# 0-simplices
+X.append([0])
+X.append([1])
+X.append([2])
+# 1-simplices
+X.append([0,1])
+X.append([1,2])
+X.append([0,2])
+# 2-simplices
+X.append([0,1,2])
+```
+__Warning:__ there are currently no checks to make sure a `SimplicialComplex` does not contain duplicate simplices, or that all faces are included.  Thus, one should be very careful to add all faces and do so exactly once.
+
+__Warning:__ the persistence computation currently assumes that the complex is acyclic at the end of the filtration in order to precompute the number of barcode pairs.
+
+
+# (Deprecated) Dionysus Driver
+
+There are also functions that call Dionysus (https://mrzv.org/software/dionysus2/) for the persistence calculations.
+There functions are superseded by the PyTorch Extensions, but may still be used.  Note that initialization may differ slightly from the default layers.
+
+```bash
+source activate toplayer
+pip install --verbose dionysus
+```
+
+The corresponding imports are
+```python
+from topologylayer.nn.levelset import LevelSetLayer1D
+from topologylayer.nn.levelset import LevelSetLayer as LevelSetLayer2D
+from topologylayer.nn.alpha import AlphaLayer
+from topologylayer.nn.rips import RipsLayer
+```
+The return types should be the same as the extensions, but output may not be identical (zero-length bars are truncated).
