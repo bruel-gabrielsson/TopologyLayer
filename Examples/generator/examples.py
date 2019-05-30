@@ -7,9 +7,6 @@ import torchvision.datasets as dset
 import torchvision.transforms as T
 from torchvision.utils import save_image
 
-import sys
-sys.path.append('../')
-
 import matplotlib.pyplot as plt
 import numpy as np
 import time

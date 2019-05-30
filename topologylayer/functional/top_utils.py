@@ -6,24 +6,15 @@ dtype = torch.float32
 ''' Example of how to construct a cost function based on the persistence diagrams. '''
 def cost_function(dgms):
     ''' Undefined are -1.0 for our rips and infinite are at saturation value '''
-    dgm0, dgm1, dgm2 = dgms[0].type(dtype).clone(), dgms[1].type(dtype).clone(), dgms[2].type(dtype).clone()
+    dgm0 = dgms[0].type(dtype).clone()
     min_value = -1.0 # not always true, but can be assumed in most contexts
     dgm0[dgm0 == -np.inf] = min_value
-    dgm1[dgm1 == -np.inf] = min_value
-    dgm2[dgm2 == -np.inf] = min_value
     NAN = torch.tensor(float('nan')).type(dtype)
     lifetimes0 = torch.abs(dgm0[:,1]-dgm0[:,0])
     lifetimes0[lifetimes0 != lifetimes0] = 0
     sorted_d_dgm0, indsD0 = torch.sort( dgm0[:,1][dgm0[:,1] > -np.inf], 0)
     sorted0, inds0 = torch.sort(lifetimes0, 0, descending=True)
-    lifetimes1 = torch.abs(dgm1[:,1]-dgm1[:,0])
-    lifetimes1[lifetimes1 != lifetimes1] = 0
-    sorted_d_dgm1, indsD1 = torch.sort( dgm1[:,1][dgm1[:,1] > -np.inf], 0)
-    sorted1, inds1 = torch.sort(lifetimes1, 0, descending=True)
-    sorted_d_dgm2, indsD2 = torch.sort( dgm2[:,1][dgm2[:,1] > -np.inf], 0)
-    lifetimes2 = torch.abs(dgm2[:,1]-dgm2[:,0])
-    lifetimes2[lifetimes2 != lifetimes2] = 0
-    sorted2, inds2 = torch.sort(lifetimes2, 0, descending=True)
+
     cost = torch.add(
         torch.Tensor([0.0]),
         torch.mul(torch.sum(torch.abs(sorted0[1:1+10000])), 1.0),
