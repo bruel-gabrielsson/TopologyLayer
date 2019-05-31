@@ -1,3 +1,3 @@
-import nn
-import functional
+import topologylayer.nn
+import topologylayer.functional
 from topologylayer.functional.cohom_cpp import SimplicialComplex

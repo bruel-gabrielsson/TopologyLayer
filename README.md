@@ -72,9 +72,9 @@ for i in range(500):
 # Get Started
 
 Dependencies:
-* Python 2.7
-* numpy
-* scipy
+* Python (2 or 3)
+* NumPy
+* SciPy
 * PyTorch 1.0
 
 ## Installation using pip
@@ -89,7 +89,7 @@ pip install git+https://github.com/bruel-gabrielsson/TopologyLayer.git
 
 First, create a conda environment
 ```bash
-conda create -n toplayer python=2.7
+conda create -n toplayer # python=2 or python=3
 source activate toplayer
 ```
 

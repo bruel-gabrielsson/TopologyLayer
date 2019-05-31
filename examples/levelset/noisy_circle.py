@@ -1,3 +1,4 @@
+from __future__ import print_function
 import torch, torch.nn as nn, numpy as np, matplotlib.pyplot as plt
 from topologylayer.nn import LevelSetLayer2D, SumBarcodeLengths, PartialSumBarcodeLengths
 
@@ -49,7 +50,7 @@ for i in range(500):
     loss.backward()
     optimizer.step()
     if (i % 10 == 0):
-        print i, tlossi.item(), dlossi.item()
+        print(i, tlossi.item(), dlossi.item())
 
 
 # save figure

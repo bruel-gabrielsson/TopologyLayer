@@ -1,3 +1,4 @@
+from __future__ import print_function
 from topologylayer.nn import AlphaLayer
 from topologylayer.nn import *
 
