@@ -138,9 +138,10 @@ class LevelSetLayer2D(LevelSetLayer):
         maxdim : maximum homology dimension (default 1)
         sublevel : sub or superlevel persistence (default=True)
         complex : method of constructing complex
-            "freudenthal" (default) - canonical triangulation
+            "freudenthal" (default) - canonical triangulation of the lattice
             "grid" - includes diagonals and anti-diagonals
-            "dumb" - self explanatory
+            "delaunay" - scipy delaunay triangulation of the lattice.
+                Every square will be triangulated, but the diagonal orientation may not be consistent.
     """
     def __init__(self, size, maxdim=1, sublevel=True, complex="freudenthal"):
         width, height = size
@@ -149,7 +150,7 @@ class LevelSetLayer2D(LevelSetLayer):
             tmpcomplex = init_freudenthal_2d(width, height)
         elif complex == "grid":
             tmpcomplex = init_grid_2d(width, height)
-        elif complex == "dumb":
+        elif complex == "delaunay":
             tmpcomplex = init_tri_complex(width, height)
         super(LevelSetLayer2D, self).__init__(tmpcomplex, maxdim=maxdim, sublevel=sublevel)
         self.size = size
