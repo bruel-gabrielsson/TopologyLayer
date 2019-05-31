@@ -2,7 +2,72 @@
 
 This repository contains a Python package that implements PyTorch-compatible persistent homology layers, as well as featurization of the output.
 
-For an introduction to this topic, see our preprint. [arxiv:1905.12200](https://arxiv.org/abs/1905.12200)
+For an introduction to this topic, see the preprint **A Topology Layer for Machine Learning**, [arxiv:1905.12200](https://arxiv.org/abs/1905.12200)
+
+
+### Point Cloud Optimization
+
+In this example, we increase the size of holes in a random point cloud. [full source](examples/pointcloud/holes.py)
+
+```python
+from topologylayer.nn import AlphaLayer, BarcodePolyFeature
+import torch, numpy as np, matplotlib.pyplot as plt
+
+# random pointcloud
+np.random.seed(0)
+data = np.random.rand(100, 2)
+
+# optimization to increase size of holes
+layer = AlphaLayer(maxdim=1)
+x = torch.autograd.Variable(torch.tensor(data).type(torch.float), requires_grad=True)
+f1 = BarcodePolyFeature(1,2,0)
+optimizer = torch.optim.Adam([x], lr=1e-2)
+for i in range(100):
+    optimizer.zero_grad()
+    loss = -f1(layer(x))
+    loss.backward()
+    optimizer.step()
+```
+
+![holy moly!](examples/pointcloud/holes.png "holy moly!")
+
+
+### Level Set Optimization
+
+In this example, we use level set topology to regularize a least squares problem `y = X * beta + noise`.  [full source](examples/levelset/noisy_circle.py)
+
+```python
+import torch, torch.nn as nn, numpy as np, matplotlib.pyplot as plt
+from topologylayer.nn import LevelSetLayer2D, SumBarcodeLengths, PartialSumBarcodeLengths
+# see full source for setup of problem
+# X, y, and beta_ols are created
+
+class TopLoss(nn.Module):
+    def __init__(self, size):
+        super(TopLoss, self).__init__()
+        self.pdfn = LevelSetLayer2D(size=size,  sublevel=False)
+        self.topfn = PartialSumBarcodeLengths(dim=1, skip=1) # penalize more than 1 hole
+        self.topfn2 = SumBarcodeLengths(dim=0) # penalize more than 1 max
+
+    def forward(self, beta):
+        dgminfo = self.pdfn(beta)
+        return self.topfn(dgminfo) + self.topfn2(dgminfo)
+
+tloss = TopLoss((50,50)) # topology penalty
+dloss = nn.MSELoss() # data loss
+
+beta_t = torch.autograd.Variable(torch.tensor(beta_ols).type(torch.float), requires_grad=True)
+X_t = torch.tensor(X, dtype=torch.float, requires_grad=False)
+y_t = torch.tensor(y, dtype=torch.float, requires_grad=False)
+optimizer = torch.optim.Adam([beta_t], lr=1e-2)
+for i in range(500):
+    optimizer.zero_grad()
+    loss = 0.1*tloss(beta_t) + dloss(y_t, torch.matmul(X_t, beta_t.view(-1)))
+    loss.backward()
+    optimizer.step()
+```
+
+![holy moly!](examples/levelset/noisy_circle.png "holy moly!")
 
 # Get Started
 
