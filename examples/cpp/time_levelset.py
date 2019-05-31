@@ -1,8 +1,8 @@
 from __future__ import print_function
-from topologylayer.nn.levelset_cpp import LevelSetLayer1D as LevelSetLayer1Dnew
-from topologylayer.nn.levelset_cpp import LevelSetLayer2D as LevelSetLayer2Dnew
-from topologylayer.nn.levelset import LevelSetLayer1D as LevelSetLayer1Dold
-from topologylayer.nn.levelset import LevelSetLayer as LevelSetLayer2Dold
+from topologylayer.nn.levelset import LevelSetLayer1D as LevelSetLayer1Dnew
+from topologylayer.nn.levelset import LevelSetLayer2D as LevelSetLayer2Dnew
+from topologylayer.nn.levelset_dionysus import LevelSetLayer1D as LevelSetLayer1Dold
+from topologylayer.nn.levelset_dionysus import LevelSetLayer as LevelSetLayer2Dold
 
 import torch
 import time
