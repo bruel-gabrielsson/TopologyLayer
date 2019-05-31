@@ -12,9 +12,9 @@ import numpy as np
 import time
 from pprint import pprint
 import os
-from topologylayer.functional.top_utils import *
-from topologylayer.functional.DiagramlayerRips import Diagramlayer as DiagramlayerRips
-from topologylayer.functional.DiagramlayerTopLevel import Diagramlayer as DiagramlayerToplevel
+from topologylayer.functional.utils_dionysus import *
+from topologylayer.functional.rips_dionysus import Diagramlayer as DiagramlayerRips
+from topologylayer.functional.levelset_dionysus import Diagramlayer as DiagramlayerToplevel
 
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]="2,3"

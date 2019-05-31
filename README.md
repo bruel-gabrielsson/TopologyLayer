@@ -351,7 +351,7 @@ __Warning:__ there are currently no checks to make sure a `SimplicialComplex` do
 __Warning:__ the persistence computation currently assumes that the complex is acyclic at the end of the filtration in order to precompute the number of barcode pairs.
 
 
-# (Deprecated) Dionysus Driver
+# (Deprecated) Dionysus Drivers
 
 There are also functions that call Dionysus (https://mrzv.org/software/dionysus2/) for the persistence calculations.
 There functions are superseded by the PyTorch Extensions, but may still be used.  Note that initialization may differ slightly from the default layers.
@@ -363,9 +363,9 @@ pip install --verbose dionysus
 
 The corresponding imports are
 ```python
-from topologylayer.nn.levelset import LevelSetLayer1D
-from topologylayer.nn.levelset import LevelSetLayer as LevelSetLayer2D
-from topologylayer.nn.alpha import AlphaLayer
-from topologylayer.nn.rips import RipsLayer
+from topologylayer.nn.levelset_dionysus import LevelSetLayer1D
+from topologylayer.nn.levelset_dionysus import LevelSetLayer as LevelSetLayer2D
+from topologylayer.nn.alpha_dionysus import AlphaLayer
+from topologylayer.nn.rips_dionysus import RipsLayer
 ```
 The return types should be the same as the extensions, but output may not be identical (zero-length bars are truncated).

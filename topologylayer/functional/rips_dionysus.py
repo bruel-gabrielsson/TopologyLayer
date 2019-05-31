@@ -2,7 +2,7 @@ from __future__ import print_function
 import numpy as np
 # import sys
 # sys.path.append('../Python')
-from ..util.flag import computePersistence
+from ..util.flag_dionysus import computePersistence
 import dionysus as d
 import time
 import torch
