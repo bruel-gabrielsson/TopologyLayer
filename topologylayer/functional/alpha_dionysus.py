@@ -1,14 +1,65 @@
 from __future__ import print_function
 import numpy as np
-# import sys
-# sys.path.append('../Python')
-from ..util.flag import computePersistence
+from ..util.flag_dionysus import computePersistence
 import dionysus as d
 import time
 import torch
+import itertools
+from scipy.spatial import Delaunay
 from torch.autograd import Variable, Function
 dtype=torch.float32 # torch.double #torch.float32
 PLOT = True
+
+
+def alpha_filtration_1d(x):
+    """
+    returns dionysus filtration on 1D space
+    """
+    inds = np.argsort(x)
+    simplices = []
+    # append 0-cells
+    for i in inds:
+        simplices.append(([i], 0.))
+    # append 1-cells
+    for ii in range(len(inds) - 1):
+        simplices.append(([inds[ii], inds[ii+1]], x[inds[ii+1]] - x[inds[[ii]]]))
+    return d.Filtration(simplices)
+
+
+def alpha_filtration(x, maxdim=2):
+    """
+    compute Delaunay triangulation
+    fill in simplices as appropriate
+
+    if x is 1-dimensional, defaults to 1D alpha
+    inputs:
+        x - pointcloud
+        maxdim - maximal simplex dimension (default = 2)
+    """
+    if x.shape[1] == 1:
+        x = x.flatten()
+        return alpha_filtration_1d(x)
+    tri = Delaunay(x)
+    simplices = []
+    # fill in 0 - cells
+    for i in range(len(x)):
+        simplices.append(([i], 0.))
+    # fill in higher-d - cells
+    for s in tri.simplices:
+        # edges
+        for i, j in itertools.combinations(s, 2):
+            simplices.append(([i, j], np.linalg.norm(x[i] - x[j])))
+        # higher order simplices
+        for dim in range(2, maxdim+1):
+            # loop over faces
+            for face in itertools.combinations(s, dim+1):
+                # get filtration value for face
+                vface = 0.
+                for i, j in itertools.combinations(face, 2):
+                    vface = max(vface, np.linalg.norm(x[i] - x[j]))
+                simplices.append((list(face), vface))
+    return d.Filtration(simplices)
+
 
 ''' OBS: -1.0 are used as a token value for dgm values and indicies!!!!!! '''
 class Diagramlayer(Function):
@@ -16,34 +67,27 @@ class Diagramlayer(Function):
     # Note that both forward and backward are @staticmethods
     @staticmethod
     # bias is an optional argument
-    def forward(ctx, x, saturation=None, maxdim=1, verbose=False):
-        MAX_DIMENSION = maxdim + 1 # maximal simplex dimension
+    def forward(ctx, x, maxdim=1, verbose=False):
+        SKELETON_DIMENSION = maxdim + 1 # maximal simplex dimension
         if verbose: print("*** dgm start")
-        if saturation == None:
-            SATURATION_VALUE = 3.1
-            print("==== WARNING: NO SATURATION VALUE GIVEN, {}".format(SATURATION_VALUE))
-        else:
-            SATURATION_VALUE = saturation
 
         start_time = time.time()
         function_values = x
         # list of function values on vertices, and maximal dimension it will return 0,1,2,3
         function_useable = function_values.data.numpy()
-        ''' 2 is max homology dimension '''
-        ''' returns (sorted) filtration filled with the k-skeleton of the clique complex built on the points at distance at most r from each other '''
-        F = d.fill_rips(function_useable, MAX_DIMENSION, SATURATION_VALUE)
+        # F = d.fill_rips(function_useable, MAX_DIMENSION, SATURATION_VALUE)
+        F = alpha_filtration(function_useable, maxdim=SKELETON_DIMENSION)
         # F.sort() # this is done in computePersistence
 
         dgms, Tbl = computePersistence(F)
-        max_pts = np.max([len(dgms[i]) for i in xrange(maxdim+1)])
+        max_pts = np.max([len(dgms[i]) for i in range(maxdim+1)])
         num_dgm_pts = max_pts
         ''' -1 is used later '''
         dgms_inds = -1 * np.ones([maxdim+1, num_dgm_pts, 4])
         dgms_values = -np.inf * np.ones([maxdim+1, num_dgm_pts, 2]) # -1.0 * np.ones([3, num_dgm_pts, 2])
-        for dim in xrange(maxdim+1):
+        for dim in range(maxdim+1):
             if len(dgms[dim]) > 0:
                 dgm = np.array(dgms[dim])
-                dgm[dgm == np.inf] = SATURATION_VALUE
                 l = np.min([num_dgm_pts, len(dgm)])
                 arg_sort = np.argsort(np.abs(dgm[:,1] - dgm[:,0]))[::-1]
                 dgms_inds[dim][:l] = dgm[arg_sort[:l], 2:6]

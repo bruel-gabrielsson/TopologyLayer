@@ -1,5 +1,5 @@
-from ..functional.DiagramlayerRips import Diagramlayer as ripsdgm
-from ..util.process import remove_filler
+from topologylayer.util.construction import clique_complex
+from topologylayer.functional.flag import FlagDiagram
 
 import torch
 import torch.nn as nn
@@ -9,18 +9,16 @@ class RipsLayer(nn.Module):
     """
     Rips persistence layer
     Parameters:
+        n : number of points
         maxdim : maximum homology dimension (default=1)
-        rmax   : maximum value of filtration (default=inf)
-        verbose : print information
     """
-    def __init__(self, maxdim=1, rmax=np.inf, verbose=False):
+    def __init__(self, n, maxdim=1):
         super(RipsLayer, self).__init__()
-        self.rmax = rmax
         self.maxdim = maxdim
-        self.verbose = verbose
-        self.fnobj = ripsdgm()
+        self.complex = clique_complex(n, maxdim+1)
+        self.complex.initialize()
+        self.fnobj = FlagDiagram()
 
     def forward(self, x):
-        dgm = self.fnobj.apply(x, self.rmax, self.maxdim, self.verbose)
-        dgms = tuple(remove_filler(dgm[i], -np.inf) for i in range(self.maxdim+1))
+        dgms = self.fnobj.apply(self.complex, x, self.maxdim)
         return dgms, True
