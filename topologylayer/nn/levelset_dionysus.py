@@ -1,4 +1,4 @@
-from ..functional.DiagramlayerTopLevel import Diagramlayer as levelsetdgm
+from ..functional.levelset_dionysus import Diagramlayer as levelsetdgm
 from ..util.process import remove_filler
 
 import torch

@@ -1,4 +1,4 @@
-from ..functional.alpha import Diagramlayer as alphadgm
+from ..functional.alpha_dionysus import Diagramlayer as alphadgm
 from ..util.process import remove_filler
 
 import torch

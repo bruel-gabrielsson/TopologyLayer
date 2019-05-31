@@ -1,4 +1,4 @@
-from ..functional.DiagramlayerRips import Diagramlayer as ripsdgm
+from ..functional.levelset_dionysus import Diagramlayer as ripsdgm
 from ..util.process import remove_filler
 
 import torch

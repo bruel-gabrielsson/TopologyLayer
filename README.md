@@ -353,7 +353,7 @@ __Warning:__ the persistence computation currently assumes that the complex is a
 
 # (Deprecated) Dionysus Drivers
 
-There are also functions that call Dionysus (https://mrzv.org/software/dionysus2/) for the persistence calculations.
+There are deprecated functions that call Dionysus (https://mrzv.org/software/dionysus2/) for the persistence calculations.
 There functions are superseded by the PyTorch Extensions, but may still be used.  Note that initialization may differ slightly from the default layers.
 
 ```bash
