@@ -1,3 +1,4 @@
+from __future__ import print_function
 from topologylayer.functional.cohom_cpp import SimplicialComplex, persistenceForward
 from topologylayer.util.process import remove_zero_bars
 import torch
@@ -45,5 +46,5 @@ s.extendFloat(f)
 ret = persistenceForward(s, 1)
 
 for k in range(2):
-    print "dimension %d bars" % k
-    print remove_zero_bars(ret[k])
+    print("dimension %d bars" % k)
+    print(remove_zero_bars(ret[k]))

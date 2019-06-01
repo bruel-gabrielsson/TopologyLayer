@@ -35,12 +35,12 @@ class Diagramlayer(Function):
         # F.sort() # this is done in computePersistence
 
         dgms, Tbl = computePersistence(F)
-        max_pts = np.max([len(dgms[i]) for i in xrange(maxdim+1)])
+        max_pts = np.max([len(dgms[i]) for i in range(maxdim+1)])
         num_dgm_pts = max_pts
         ''' -1 is used later '''
         dgms_inds = -1 * np.ones([maxdim+1, num_dgm_pts, 4])
         dgms_values = -np.inf * np.ones([maxdim+1, num_dgm_pts, 2]) # -1.0 * np.ones([3, num_dgm_pts, 2])
-        for dim in xrange(maxdim+1):
+        for dim in range(maxdim+1):
             if len(dgms[dim]) > 0:
                 dgm = np.array(dgms[dim])
                 dgm[dgm == np.inf] = SATURATION_VALUE

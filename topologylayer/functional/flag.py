@@ -24,7 +24,7 @@ class FlagDiagram(Function):
     def backward(ctx, *grad_dgms):
         # print(grad_dgms)
         X = ctx.X
-        y, = ctx.saved_variables
+        y, = ctx.saved_tensors
         grad_ret = list(grad_dgms)
         grad_y = persistenceBackwardFlag(X, y, grad_ret)
         return None, grad_y, None
