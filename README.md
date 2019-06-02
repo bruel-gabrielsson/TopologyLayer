@@ -392,8 +392,9 @@ If your issue appears to be due to the package, please create an [an issue](http
 * Any other relevant information
 
 __MacOS Information:__
-If PyTorch was compiled using `clang++`, you may run into issues if `pip` defaults to `g++`.  You can make `pip` use `clang++` by setting the `CXX` environment variable.
+If PyTorch was compiled using `clang++`, you may run into issues if `pip` defaults to `g++`.  You can make `pip` use `clang++` by setting the `CXX` and `CPPFLAGS` environment variables.
 ```bash
 export CXX=/usr/bin/clang++
+export CPPFLAGS="-stdlib=libc++"
 pip install git+https://github.com/bruel-gabrielsson/TopologyLayer.git
 ```

@@ -6,7 +6,7 @@ from torch.utils.cpp_extension import CppExtension, BuildExtension
 
 this_dir = os.path.dirname(os.path.realpath(__file__))
 include_dir = this_dir + '/topologylayer/functional/cohom_cpp/'
-extra = {'cxx': ['-std=c++11', '-stdlib=libc++']} #, '-D_GLIBCXX_USE_CXX11_ABI=1'
+extra = {'cxx': ['-std=c++11']} #, '-D_GLIBCXX_USE_CXX11_ABI=1'
 
 setup(name='topologylayer',
         packages=['topologylayer', 'topologylayer.functional',
