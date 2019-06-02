@@ -38,7 +38,7 @@ void SimplicialComplex::printCritInds() {
 }
 
 void SimplicialComplex::printFunctionMap() {
-	for (int i = 0; i < function_map.size(); i++) {
+	for (size_t i = 0; i < function_map.size(); i++) {
 		py::print(i, function_map[i]);
 	}
 }

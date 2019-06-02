@@ -84,6 +84,7 @@ Assuming you have the listed dependencies and pip, you should be able to install
 pip install git+https://github.com/bruel-gabrielsson/TopologyLayer.git
 ```
 
+If you're having issues, see [troubleshooting notes](#troubleshooting-installation) below.
 
 ## (Optional) Conda Environment Configuration
 
@@ -369,3 +370,30 @@ from topologylayer.nn.alpha_dionysus import AlphaLayer
 from topologylayer.nn.rips_dionysus import RipsLayer
 ```
 The return types should be the same as the extensions, but output may not be identical (zero-length bars are truncated).
+
+# Troubleshooting Installation
+
+This package has been successfully installed/tested on the following systems:
+* Fedora 29
+* Ubuntu, running on Windows Linux Subsystem
+* MacOS High Sierra
+
+Installation has been successful using [Anaconda Python](https://www.anaconda.com/distribution/).  See [installation notes above](#optional-conda-environment-configuration)
+
+__General Information:__
+Pass a `--verbose` flag to `pip` if you are having any issues.
+```bash
+pip install --verbose git+https://github.com/bruel-gabrielsson/TopologyLayer.git
+```
+If your issue appears to be due to the package, please create an [an issue](https://github.com/bruel-gabrielsson/TopologyLayer/issues) with the following information:
+* Your operating system
+* Python version, environment setup
+* The verbose output of the installation command
+* Any other relevant information
+
+__MacOS Information:__
+If PyTorch was compiled using `clang++`, you may run into issues if `pip` defaults to `g++`.  You can make `pip` use `clang++` by setting the `CXX` environment variable.
+```bash
+export CXX=/usr/bin/clang++
+pip install git+https://github.com/bruel-gabrielsson/TopologyLayer.git
+```
