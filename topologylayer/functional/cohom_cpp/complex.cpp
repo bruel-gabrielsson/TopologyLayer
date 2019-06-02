@@ -9,7 +9,7 @@
 namespace py = pybind11;
 
 
-void SimplicialComplex::append(std::vector<size_t> &x) {
+void SimplicialComplex::append(std::vector<int> &x) {
   // make sure simplex is sorted
   sort(x.begin(), x.end());
   // add to list of cells
@@ -60,7 +60,7 @@ void SimplicialComplex::initialize() {
 
 
 	// first build reverse map
-    std::map<std::vector<size_t>, size_t> reverse_map;
+    std::map<std::vector<int>, size_t> reverse_map;
 	size_t maxdim  = 0;
 	size_t indx = 0;
     for(auto s : cells){
@@ -82,9 +82,9 @@ void SimplicialComplex::initialize() {
 	bdr.reserve(indx);
 
 
-	std::vector<size_t> s_copy; // copy of s
+	std::vector<int> s_copy; // copy of s
 	for (auto s: cells){
-		std::vector<size_t> tmp; // holds boundary
+		std::vector<int> tmp; // holds boundary
 		s_copy.clear(); // clear out copy
 		if(s.size()>1){
 			for (size_t i = 0; i < s.size(); i++ ){

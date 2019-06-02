@@ -20,7 +20,7 @@ class SimplicialComplex{
   public:
 
     // complex is stored as list of cells
-    std::vector<std::vector<size_t>> cells;
+    std::vector<std::vector<int>> cells;
     // number of cells in each dimension
     std::vector<int> ncells;
 
@@ -29,7 +29,7 @@ class SimplicialComplex{
 
     // holds map to critical cell
     // function_map[j] = [...] face that causes cell j to appear
-    std::vector<std::vector<size_t>> function_map;
+    std::vector<std::vector<int>> function_map;
 
     // holds filtration information
     std::vector<std::pair<float, int>> full_function;
@@ -49,7 +49,7 @@ class SimplicialComplex{
     std::vector<Cocycle> bdr;
 
     // appends simplex to complex
-    void append(std::vector<size_t> &x);
+    void append(std::vector<int> &x);
 
     // prints the list of simplices
     void printComplex();

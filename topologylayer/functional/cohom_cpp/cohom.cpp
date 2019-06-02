@@ -112,7 +112,7 @@ std::vector<torch::Tensor> persistence_forward(SimplicialComplex &X, int MAXDIM)
 		 // get birth index
 		 size_t bindx = pivot->index;
 		 // get birth dimension
-		 size_t hdim = X.bdr[bindx].dim();
+		 int hdim = X.bdr[bindx].dim();
 		 if (hdim > MAXDIM) { continue; }
 
 		 // get location in diagram

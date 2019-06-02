@@ -11,17 +11,17 @@ class Cocycle{
 
 		// non-zero entries
 		// IMPORTANT: this is assumed to always be sorted!
-		std::vector<size_t> cochain;
+		std::vector<int> cochain;
 
 		// we should never have this
 		Cocycle() : index(-1){}
 
 		// initializations
-		Cocycle(size_t x) : index(x) {cochain.push_back(x); }
-		Cocycle(size_t x, std::vector<size_t> y) :  index(x) , cochain(y) {}
+		Cocycle(int x) : index(x) {cochain.push_back(x); }
+		Cocycle(int x, std::vector<int> y) :  index(x) , cochain(y) {}
 
 		// for debug purposes
-		void insert(size_t x);
+		void insert(int x);
 
 		// add two cocycles over Z_2
 		void add(const Cocycle &x);
