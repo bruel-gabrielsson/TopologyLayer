@@ -84,7 +84,7 @@ Assuming you have the listed dependencies and pip, you should be able to install
 pip install git+https://github.com/bruel-gabrielsson/TopologyLayer.git
 ```
 
-If you're having issues, see [troubleshooting notes](#troubleshooting-installation) below.
+If you're having issues, see [troubleshooting notes](#troubleshooting-installation) below.  __MacOS__ users will likely need to see this section to set some necessary environment variables.
 
 ## (Optional) Conda Environment Configuration
 
@@ -392,9 +392,10 @@ If your issue appears to be due to the package, please create an [an issue](http
 * Any other relevant information
 
 __MacOS Information:__
-If PyTorch was compiled using `clang++`, you may run into issues if `pip` defaults to `g++`.  You can make `pip` use `clang++` by setting the `CXX` and `CPPFLAGS` environment variables.
+If PyTorch was compiled using `clang++`, you may run into issues if `pip` defaults to `g++`.  You can make `pip` use `clang++` by setting the `CXX` environment variable.  The `CPPFLAGS` environment variable also needs to be set to look at `libc++` to avoid compatibility issues with the PyTorch headers.  The `MACOSX_DEPLOYMENT_TARGET` environment variable may also need to be set (set the target to be whatever your OS version is).
 ```bash
 export CXX=/usr/bin/clang++
 export CPPFLAGS="-stdlib=libc++"
-pip install git+https://github.com/bruel-gabrielsson/TopologyLayer.git
+export MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion)
+pip install --verbose git+https://github.com/bruel-gabrielsson/TopologyLayer.git
 ```
