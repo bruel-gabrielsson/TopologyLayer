@@ -5,7 +5,7 @@
 namespace py = pybind11;
 
 
-void Cocycle::insert(size_t x){
+void Cocycle::insert(int x){
 	cochain.push_back(x);
 }
 
@@ -17,7 +17,7 @@ void Cocycle::add(const Cocycle &x){
 	if (cochain.size() == 0) {cochain = x.cochain; return;}
 
 	// now we know there is something non-trivial to do
-	std::vector<size_t> tmp;
+	std::vector<int> tmp;
 	size_t i1 = 0;
 	size_t i2 = 0;
 	do {
@@ -60,8 +60,8 @@ int  Cocycle::dot(const Cocycle &x) const{
 	size_t i2 = 0;
 	size_t intersection = 0;
 	do {
-		size_t v1 = cochain[i1];
-		size_t v2 = x.cochain[i2];
+		auto v1 = cochain[i1];
+		auto v2 = x.cochain[i2];
 		if (v1 == v2) {
 			i1++;
 			i2++;
