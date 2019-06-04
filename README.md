@@ -75,7 +75,7 @@ Dependencies:
 * Python (2 or 3)
 * NumPy
 * SciPy
-* PyTorch 1.0
+* PyTorch 1.0+
 
 ## Installation using pip
 Assuming you have the listed dependencies and pip, you should be able to install.
@@ -97,7 +97,7 @@ source activate toplayer
 Now, add dependencies
 ```bash
 conda install numpy scipy matplotlib
-conda install pytorch=1.0 torchvision -c pytorch
+conda install pytorch torchvision -c pytorch
 ```
 
 Now, you can install the TopologyLayer package.
@@ -120,7 +120,7 @@ You are now ready to compile extensions.  PyTorch tutorial on extensions [here](
 *Important*: in environment, it seems like using the pytorch conda channel is important
 ```bash
 source activate toplayer
-conda install pytorch=1.0 torchvision -c pytorch
+conda install pytorch torchvision -c pytorch
 ```
 
 Compilation uses python's `setuptools` module.
