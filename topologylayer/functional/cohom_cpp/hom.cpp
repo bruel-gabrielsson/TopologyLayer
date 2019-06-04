@@ -6,6 +6,8 @@
 #include <map>
 #include "sparsevec.h"
 
+#include "hom.h"
+
 
 /*
 Function to build boundary of simplicial complex once sorted order is determined.
@@ -26,7 +28,7 @@ std::vector<SparseF2Vec<int>> sorted_boundary(SimplicialComplex &X) {
 	for (size_t j : X.filtration_perm ) {
 		row_inds.clear(); // clear out column
 		// go through non-zeros in boundary
-		for (auto i : X.bdr[j].cochain) {
+		for (auto i : X.bdr[j].cochain.nzinds) {
 			row_inds.push_back(X.inv_filtration_perm[i]);  // push location of bounday cell in filtration
 		}
 		// append sorted row_inds to B
@@ -54,7 +56,7 @@ void homology_reduction_alg(std::vector<SparseF2Vec<int>> &B, std::map<int, int>
 				// we have completely reduced column
 				break;
 			} else {
-				if (pivot_to_col.count(piv)) {
+				if (pivot_to_col.count(piv) > 0) {
 					// there is a column with that pivot
 					B[j].add(B[piv]);
 				} else {

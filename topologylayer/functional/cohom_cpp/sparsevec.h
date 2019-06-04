@@ -106,7 +106,7 @@ class SparseF2Vec{
 
 		// returns last non-zero row in column
 		T pivot() {
-			return nzinds.back() == 0 ? std::numeric_limits<T>::max() : *(nzinds.back());
+			return nzinds.size() == 0 ? std::numeric_limits<T>::max() : nzinds.back();
 		}
 
 

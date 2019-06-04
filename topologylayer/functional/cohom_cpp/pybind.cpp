@@ -1,5 +1,6 @@
 #include <torch/extension.h>
 
+#include "hom.h"
 #include "cohom.h"
 #include "complex.h"
 
@@ -25,4 +26,5 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("persistenceForward", &persistence_forward);
   m.def("persistenceBackward", &persistence_backward);
   m.def("persistenceBackwardFlag", &persistence_backward_flag);
+  m.def("persistenceForwardHom", &persistence_forward_hom);
 }
