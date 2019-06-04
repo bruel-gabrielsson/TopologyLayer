@@ -102,7 +102,7 @@ void SimplicialComplex::initialize() {
 		}
 
 		// make sure simplex is sorted
-	    sort(tmp.begin(), tmp.end());
+	  std::sort(tmp.begin(), tmp.end());
 
 		// reverse_map[s] is index of cell
 		// tmp is boundary of s

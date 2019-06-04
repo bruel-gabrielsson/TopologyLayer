@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cstddef>
+#include <limits>
 
 #include <torch/extension.h>
 namespace py = pybind11;
@@ -102,6 +103,12 @@ class SparseF2Vec{
 		void print() {
 			py::print(nzinds);
 		}
+
+		// returns last non-zero row in column
+		T pivot() {
+			return nzinds.back() == 0 ? std::numeric_limits<T>::max() : *(nzinds.back());
+		}
+
 
 };
 
