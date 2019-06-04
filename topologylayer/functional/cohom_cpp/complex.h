@@ -12,6 +12,7 @@ must be able to:
 */
 #include <torch/extension.h>
 #include <vector>
+#include <cstddef>
 #include "cocycle.h"
 
 // TODO: template over filtration type

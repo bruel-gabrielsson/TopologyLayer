@@ -2,6 +2,7 @@
 #define _COCYCLE_H
 
 #include <vector>
+#include <cstddef>
 
 
 class Cocycle{
