@@ -44,11 +44,15 @@ class AlphaLayer(nn.Module):
     Alpha persistence layer
     Parameters:
         maxdim : maximum homology dimension (default=0)
+        alg : algorithm
+            'hom' = homology (default)
+            'cohom' = cohomology
     """
-    def __init__(self, maxdim=0):
+    def __init__(self, maxdim=0, alg='hom'):
         super(AlphaLayer, self).__init__()
         self.maxdim = maxdim
         self.fnobj = FlagDiagram()
+        self.alg = alg
 
     def forward(self, x):
         xnp = x.data.numpy()
@@ -59,5 +63,5 @@ class AlphaLayer(nn.Module):
         else:
             complex = delaunay_complex(xnp, maxdim=self.maxdim+1)
         complex.initialize()
-        dgms = self.fnobj.apply(complex, x, self.maxdim)
+        dgms = self.fnobj.apply(complex, x, self.maxdim, self.alg)
         return dgms, True
