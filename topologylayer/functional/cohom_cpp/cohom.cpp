@@ -41,7 +41,7 @@ void reduction_step(SimplicialComplex &X,\
 		 size_t bindx = pivot->index;
 		 size_t dindx = c.index;
 		 // get birth dimension
-		 size_t hdim = X.bdr[bindx].dim();
+		 size_t hdim = X.dim(bindx);
 
 		 // get location in diagram
 		 size_t j = nbars[hdim]++;

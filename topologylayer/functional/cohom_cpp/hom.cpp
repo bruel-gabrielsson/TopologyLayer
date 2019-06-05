@@ -50,20 +50,17 @@ OUTPUT:
 void homology_reduction_alg(std::vector<SparseF2Vec<int>> &B, std::map<int, int> &pivot_to_col) {
 	// loop over columns of boundary matrix
 	for (size_t j = 0; j < B.size(); j++) {
-		while (true) {
-			int piv = B[j].pivot();
-			if (piv == std::numeric_limits<int>::max()) {
-				// we have completely reduced column
-				break;
+		// if nnz = 0, the reduction is complete
+		while (B[j].nnz() > 0) {
+			int piv = B[j].last();
+			if (pivot_to_col.count(piv) > 0) {
+				int k = pivot_to_col[piv];
+				// there is a column with that pivot
+				B[j].add(B[k]);
 			} else {
-				if (pivot_to_col.count(piv) > 0) {
-					// there is a column with that pivot
-					B[j].add(B[piv]);
-				} else {
-					// there is no column with that pivot
-					pivot_to_col[piv] = j;
-					break;
-				}
+				// there is no column with that pivot
+				pivot_to_col[piv] = j;
+				break;
 			}
 		} // end column reduction
 	} // end for loop
@@ -80,14 +77,14 @@ void homology_reduction_alg(std::vector<SparseF2Vec<int>> &B, std::map<int, int>
 	OUTPUTS: vector of tensors - t
 	 t[k] is float32 tensor with barcode for dimension k
 */
-std::vector<torch::Tensor> persistence_forward_hom(SimplicialComplex &X, int MAXDIM) {
+std::vector<torch::Tensor> persistence_forward_hom(SimplicialComplex &X, size_t MAXDIM) {
 
    // produce sort permutation on X
    X.sortedOrder();
 
 	 // initialize reutrn diagram
 	 std::vector<torch::Tensor> diagram(MAXDIM+1); // return array
-	 for (int k = 0; k < MAXDIM+1; k++) {
+	 for (size_t k = 0; k < MAXDIM+1; k++) {
 		 int Nk = X.numPairs(k); // number of bars in dimension k
 		 // allocate return tensor
 		 diagram[k] = torch::empty({Nk,2},
@@ -96,20 +93,56 @@ std::vector<torch::Tensor> persistence_forward_hom(SimplicialComplex &X, int MAX
 		 // TODO: do this in intialization since number of pairs is deterministic
 		 X.backprop_lookup[k].resize(Nk);
 	 }
-	 // keep track of how many pairs we've put in diagram
-	 std::vector<int> nbars(MAXDIM+1);
-	 for (int k = 0; k < MAXDIM+1; k++) {
-		 nbars[k] = 0;
-	 }
 
 	 // produce boundary matrix
 	 std::vector<SparseF2Vec<int>> B = sorted_boundary(X);
+	 // for (size_t j = 0; j < B.size(); j++) {
+		//  py::print(j);
+		//  B[j].print();
+	 // }
 
 	 // run standard reduction algorithm
 	 std::map<int, int> pivot_to_col;
 	 homology_reduction_alg(B, pivot_to_col);
 
+	 // keep track of how many pairs we've put in diagram
+	 std::vector<size_t> nbars(MAXDIM+1);
+	 for (size_t k = 0; k < MAXDIM+1; k++) {
+		 nbars[k] = 0;
+	 }
+
 	 // fill in diagram
+	 for (size_t j = 0; j < B.size(); j++ ) {
+		 // see if column j is completely reduced
+
+		 if (B[j].nnz() == 0) {
+			 // homology born in column j
+
+			 // in filtration order:
+			 // birth at j, death at k = pivot_to_col[j]
+			 size_t bindx = X.filtration_perm[j];
+			 size_t hdim = X.dim(bindx);
+			 if (hdim > MAXDIM) { continue; }
+			 // get location in diagram
+			 size_t di = nbars[hdim]++;
+			 // set birth time
+			 (diagram[hdim][di].data<float>())[0] = (float) X.full_function[bindx].first;
+
+			 if (pivot_to_col.count(j) > 0) {
+				 // there is a finite death.
+				 int k = pivot_to_col[j]; // column that has j as pivot
+				 size_t dindx = X.filtration_perm[k];
+				 // get dimension of cell with filtration poisition j
+				 (diagram[hdim][di].data<float>())[1] = (float) X.full_function[dindx].first;
+				 // need to fill in X.backprop_lookup as well
+				 X.backprop_lookup[hdim][di] = {(int) bindx, (int) dindx};
+			 } else {
+				 // infinite death
+				 (diagram[hdim][di].data<float>())[1] = std::numeric_limits<float>::infinity();
+				 X.backprop_lookup[hdim][di] = {(int) bindx, -1};
+			 }
+		 }
+	 }
 
    return diagram;
  }

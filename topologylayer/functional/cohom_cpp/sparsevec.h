@@ -44,8 +44,8 @@ class SparseF2Vec{
 			size_t i1 = 0;
 			size_t i2 = 0;
 			do {
-				size_t v1 = nzinds[i1];
-				size_t v2 = x.nzinds[i2];
+				T v1 = nzinds[i1];
+				T v2 = x.nzinds[i2];
 				if (v1 == v2) {
 					// F2 means sum is 0
 					i1++;
@@ -83,8 +83,8 @@ class SparseF2Vec{
 			size_t i2 = 0;
 			size_t intersection = 0;
 			do {
-				auto v1 = nzinds[i1];
-				auto v2 = x.nzinds[i2];
+				T v1 = nzinds[i1];
+				T v2 = x.nzinds[i2];
 				if (v1 == v2) {
 					i1++;
 					i2++;
@@ -104,11 +104,13 @@ class SparseF2Vec{
 			py::print(nzinds);
 		}
 
-		// returns last non-zero row in column
-		T pivot() {
-			return nzinds.size() == 0 ? std::numeric_limits<T>::max() : nzinds.back();
+		size_t nnz() {
+			return nzinds.size();
 		}
 
+		T last() {
+			return nzinds.back();
+		}
 
 };
 

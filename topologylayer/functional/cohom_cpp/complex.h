@@ -92,6 +92,9 @@ class SimplicialComplex{
     // fill in filtration order
     void sortedOrder();
 
+    // get dimension of cell j
+    size_t dim(size_t j);
+
     // extend a filtration on vertices to whole complex
     // template <typename T>
     // std::vector<T> extend_lower_star(std::vector<T>);

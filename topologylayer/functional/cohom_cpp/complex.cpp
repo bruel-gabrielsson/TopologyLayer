@@ -50,6 +50,12 @@ void SimplicialComplex::printFiltration() {
     }
 }
 
+// return dimension of cell j
+size_t SimplicialComplex::dim(size_t j) {
+	return cells[j].size() - 1;
+	//return X.bdr[bindx].dim()
+}
+
 void SimplicialComplex::initialize() {
     // to call after complex is built.
 
