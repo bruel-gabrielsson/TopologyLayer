@@ -1,6 +1,6 @@
 import unittest
 
-from topologylayer.functional.cohom_cpp import SimplicialComplex, persistenceForward
+from topologylayer.functional.persistence import SimplicialComplex, persistenceForward
 from topologylayer.util.process import remove_zero_bars
 import torch
 import numpy as np

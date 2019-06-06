@@ -1,6 +1,6 @@
 from topologylayer.util.construction import unique_simplices
 from topologylayer.functional.flag import FlagDiagram
-from topologylayer.functional.cohom_cpp import SimplicialComplex
+from topologylayer.functional.persistence import SimplicialComplex
 from scipy.spatial import Delaunay
 
 import torch

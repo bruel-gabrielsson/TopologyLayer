@@ -1,5 +1,5 @@
 from ..functional.sublevel import SubLevelSetDiagram
-from ..functional.cohom_cpp import SimplicialComplex
+from topologylayer.functional.persistence import SimplicialComplex
 from topologylayer.util.construction import unique_simplices
 
 import torch

@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 from torch.autograd import Variable, Function
-from .cohom_cpp import SimplicialComplex, persistenceForward, persistenceBackwardFlag, persistenceForwardHom
+from .persistence import SimplicialComplex, persistenceForward, persistenceBackwardFlag, persistenceForwardHom
 
 class FlagDiagram(Function):
     """

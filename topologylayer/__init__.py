@@ -1,3 +1,3 @@
 import topologylayer.nn
 import topologylayer.functional
-from topologylayer.functional.cohom_cpp import SimplicialComplex
+from topologylayer.functional.persistence import SimplicialComplex
