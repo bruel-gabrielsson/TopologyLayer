@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cstddef>
+#include "sparsevec.h"
 
 
 class Cocycle{
@@ -12,14 +13,14 @@ class Cocycle{
 
 		// non-zero entries
 		// IMPORTANT: this is assumed to always be sorted!
-		std::vector<int> cochain;
+		SparseF2Vec<int> cochain;
 
 		// we should never have this
 		Cocycle() : index(-1){}
 
 		// initializations
-		Cocycle(int x) : index(x) {cochain.push_back(x); }
-		Cocycle(int x, std::vector<int> y) :  index(x) , cochain(y) {}
+		Cocycle(size_t x) : index(x) , cochain((int) x) {}
+		Cocycle(size_t x, std::vector<int> y) :  index(x) , cochain(y) {}
 
 		// for debug purposes
 		void insert(int x);

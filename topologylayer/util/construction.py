@@ -1,6 +1,6 @@
 # utilities to help construction of complexes
 
-from topologylayer.functional.cohom_cpp import SimplicialComplex
+from topologylayer.functional.persistence import SimplicialComplex
 from itertools import combinations
 import numpy as np
 

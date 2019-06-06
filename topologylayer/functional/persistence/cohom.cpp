@@ -10,7 +10,8 @@ void reduction_step(SimplicialComplex &X,\
 		 const size_t i,\
      std::vector<Cocycle> &Z,\
      std::vector<torch::Tensor> &diagram,\
-		 std::vector<int> &nbars) {
+		 std::vector<int> &nbars,
+	 	 const size_t MAXDIM) {
 
 	 // get cocycle
 	 Cocycle c = X.bdr[i];
@@ -20,13 +21,12 @@ void reduction_step(SimplicialComplex &X,\
    auto pivot = Z.rbegin();
    for(auto x  = Z.rbegin(); x != Z.rend();  ++x){
      // see if inner product is non-zero
-     if(x->dot(c)){
+     if(x->dot(c) > 0){
        if(flag==false){
          // save as column that will be used for schur complement
          pivot = x;
          flag=true;
-       }
-       else{
+       } else {
          // schur complement
          x->add(*pivot);
        }
@@ -34,14 +34,22 @@ void reduction_step(SimplicialComplex &X,\
    }
 
    // cocycle was closed
-   if(flag){
+   if (flag) {
      // add persistence pair to diagram.
 
 		 // get birth and death indices
 		 size_t bindx = pivot->index;
 		 size_t dindx = c.index;
 		 // get birth dimension
-		 size_t hdim = X.bdr[bindx].dim();
+		 size_t hdim = X.dim(bindx);
+		 //py::print("bindx: ", bindx, " dindx: ", dindx, " hdim: ", hdim);
+
+		 // delete reduced column from active cocycles
+		 // stupid translation from reverse to iterator
+		 Z.erase(std::next(pivot).base());
+
+		 // check if we want this bar
+		 if (hdim > MAXDIM) { return; }
 
 		 // get location in diagram
 		 size_t j = nbars[hdim]++;
@@ -52,10 +60,6 @@ void reduction_step(SimplicialComplex &X,\
 
 		 // put birth/death indices of bar in X.backprop_lookup
 		 X.backprop_lookup[hdim][j] = {(int) bindx, (int) dindx};
-
-		 // delete reduced column from active cocycles
-     // stupid translation from reverse to iterator
-     Z.erase(std::next(pivot).base());
    } else {
      //  cocycle opened
 		 size_t bindx = c.index;
@@ -73,7 +77,7 @@ void reduction_step(SimplicialComplex &X,\
 	OUTPUTS: vector of tensors - t
 	 t[k] is float32 tensor with barcode for dimension k
 */
-std::vector<torch::Tensor> persistence_forward(SimplicialComplex &X, int MAXDIM) {
+std::vector<torch::Tensor> persistence_forward(SimplicialComplex &X, size_t MAXDIM) {
 
    // produce sort permutation on X
    X.sortedOrder();
@@ -83,7 +87,7 @@ std::vector<torch::Tensor> persistence_forward(SimplicialComplex &X, int MAXDIM)
 
 	 // initialize reutrn diagram
 	 std::vector<torch::Tensor> diagram(MAXDIM+1); // return array
-	 for (int k = 0; k < MAXDIM+1; k++) {
+	 for (size_t k = 0; k < MAXDIM+1; k++) {
 		 int Nk = X.numPairs(k); // number of bars in dimension k
 		 // allocate return tensor
 		 diagram[k] = torch::empty({Nk,2},
@@ -94,13 +98,13 @@ std::vector<torch::Tensor> persistence_forward(SimplicialComplex &X, int MAXDIM)
 	 }
 	 // keep track of how many pairs we've put in diagram
 	 std::vector<int> nbars(MAXDIM+1);
-	 for (int k = 0; k < MAXDIM+1; k++) {
+	 for (size_t k = 0; k < MAXDIM+1; k++) {
 		 nbars[k] = 0;
 	 }
 
 	 // go through reduction algorithm
    for (size_t i : X.filtration_perm ) {
-     reduction_step(X, i, Z, diagram, nbars);
+     reduction_step(X, i, Z, diagram, nbars, MAXDIM);
    }
 
 	 // add infinite bars using removing columns in Z
@@ -112,7 +116,7 @@ std::vector<torch::Tensor> persistence_forward(SimplicialComplex &X, int MAXDIM)
 		 // get birth index
 		 size_t bindx = pivot->index;
 		 // get birth dimension
-		 int hdim = X.bdr[bindx].dim();
+		 size_t hdim = X.bdr[bindx].dim();
 		 if (hdim > MAXDIM) { continue; }
 
 		 // get location in diagram
@@ -120,7 +124,7 @@ std::vector<torch::Tensor> persistence_forward(SimplicialComplex &X, int MAXDIM)
 
 		 // put births and deaths in diagram.
 		 (diagram[hdim][j].data<float>())[0] = (float) X.full_function[bindx].first;
-		 (diagram[hdim][j].data<float>())[1] = std::numeric_limits<float>::infinity();
+		 (diagram[hdim][j].data<float>())[1] = (float) std::numeric_limits<float>::infinity();
 
 		 // put birth/death indices of bar in X.backprop_lookup
 		 X.backprop_lookup[hdim][j] = {(int) bindx, -1};

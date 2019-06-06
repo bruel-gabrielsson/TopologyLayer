@@ -26,7 +26,12 @@ class SimplicialComplex{
     std::vector<int> ncells;
 
     // holds the permutation on cells that gives filtration order
+    // j = filtration_perm[i] means cell j is in the i'th location in filtration.
     std::vector<size_t> filtration_perm;
+
+    // holds inverse permutation on cells for filtration order
+    // i = inv_filtraiton_perm[j] means cell j is in i'th locaiton in filtration.
+    std::vector<size_t> inv_filtration_perm;
 
     // holds map to critical cell
     // function_map[j] = [...] face that causes cell j to appear
@@ -86,6 +91,9 @@ class SimplicialComplex{
 
     // fill in filtration order
     void sortedOrder();
+
+    // get dimension of cell j
+    size_t dim(size_t j);
 
     // extend a filtration on vertices to whole complex
     // template <typename T>

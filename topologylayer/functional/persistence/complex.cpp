@@ -50,6 +50,12 @@ void SimplicialComplex::printFiltration() {
     }
 }
 
+// return dimension of cell j
+size_t SimplicialComplex::dim(size_t j) {
+	return cells[j].size() - 1;
+	//return X.bdr[bindx].dim()
+}
+
 void SimplicialComplex::initialize() {
     // to call after complex is built.
 
@@ -60,10 +66,10 @@ void SimplicialComplex::initialize() {
 
 
 	// first build reverse map
-    std::map<std::vector<int>, size_t> reverse_map;
+  std::map<std::vector<int>, size_t> reverse_map;
 	size_t maxdim  = 0;
 	size_t indx = 0;
-    for(auto s : cells){
+  for(auto s : cells){
 		reverse_map[s] = indx++;
 		size_t sdim = s.size()-1;
 		maxdim = (maxdim < sdim) ? sdim : maxdim;
@@ -102,7 +108,7 @@ void SimplicialComplex::initialize() {
 		}
 
 		// make sure simplex is sorted
-	    sort(tmp.begin(), tmp.end());
+	  std::sort(tmp.begin(), tmp.end());
 
 		// reverse_map[s] is index of cell
 		// tmp is boundary of s
@@ -178,10 +184,15 @@ void SimplicialComplex::sortedOrder() {
     std::iota(filtration_perm.begin(), filtration_perm.end(), 0);
 
     // sort indexes based on comparing values in x - take into account dimension
-      std::sort(filtration_perm.begin(), filtration_perm.end(), \
-            [this](int i1, int i2) {\
-                return (full_function[i1].first==full_function[i2].first) ? full_function[i1].second < full_function[i2].second : full_function[i1].first < full_function[i2].first;});
+    std::sort(filtration_perm.begin(), filtration_perm.end(), \
+        [this](int i1, int i2) {\
+            return (full_function[i1].first==full_function[i2].first) ? full_function[i1].second < full_function[i2].second : full_function[i1].first < full_function[i2].first;});
 
+		// fill inverse filtration perm
+		inv_filtration_perm.resize(full_function.size());
+		for (size_t i = 0; i < filtration_perm.size(); i++) {
+			inv_filtration_perm[filtration_perm[i]] = i;
+		}
 }
 
 // // reworked extension function

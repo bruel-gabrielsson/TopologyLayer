@@ -11,14 +11,18 @@ class RipsLayer(nn.Module):
     Parameters:
         n : number of points
         maxdim : maximum homology dimension (default=1)
+        alg : algorithm
+            'hom' = homology (default)
+            'cohom' = cohomology
     """
-    def __init__(self, n, maxdim=1):
+    def __init__(self, n, maxdim=1, alg='hom'):
         super(RipsLayer, self).__init__()
         self.maxdim = maxdim
         self.complex = clique_complex(n, maxdim+1)
         self.complex.initialize()
         self.fnobj = FlagDiagram()
+        self.alg = alg
 
     def forward(self, x):
-        dgms = self.fnobj.apply(self.complex, x, self.maxdim)
+        dgms = self.fnobj.apply(self.complex, x, self.maxdim, self.alg)
         return dgms, True

@@ -1,5 +1,5 @@
 from ..functional.sublevel import SubLevelSetDiagram
-from ..functional.cohom_cpp import SimplicialComplex
+from topologylayer.functional.persistence import SimplicialComplex
 from topologylayer.util.construction import unique_simplices
 
 import torch
@@ -16,15 +16,19 @@ class LevelSetLayer(nn.Module):
         complex : SimplicialComplex
         maxdim : maximum homology dimension (default 1)
         sublevel : sub or superlevel persistence (default=True)
+        alg : algorithm
+            'hom' = homology (default)
+            'cohom' = cohomology
 
     Note that the complex should be acyclic for the computation to be correct (currently)
     """
-    def __init__(self, complex, maxdim=1, sublevel=True):
+    def __init__(self, complex, maxdim=1, sublevel=True, alg='hom'):
         super(LevelSetLayer, self).__init__()
         self.complex = complex
         self.maxdim = maxdim
         self.fnobj = SubLevelSetDiagram()
         self.sublevel = sublevel
+        self.alg = alg
 
         # make sure complex is initialized
         self.complex.initialize()
@@ -32,11 +36,11 @@ class LevelSetLayer(nn.Module):
 
     def forward(self, f):
         if self.sublevel:
-            dgms = self.fnobj.apply(self.complex, f, self.maxdim)
+            dgms = self.fnobj.apply(self.complex, f, self.maxdim, self.alg)
             return dgms, True
         else:
             f = -f
-            dgms = self.fnobj.apply(self.complex, f, self.maxdim)
+            dgms = self.fnobj.apply(self.complex, f, self.maxdim, self.alg)
             dgms = tuple(-dgm for dgm in dgms)
             return dgms, False
 
@@ -142,8 +146,11 @@ class LevelSetLayer2D(LevelSetLayer):
             "grid" - includes diagonals and anti-diagonals
             "delaunay" - scipy delaunay triangulation of the lattice.
                 Every square will be triangulated, but the diagonal orientation may not be consistent.
+        alg : algorithm
+            'hom' = homology (default)
+            'cohom' = cohomology
     """
-    def __init__(self, size, maxdim=1, sublevel=True, complex="freudenthal"):
+    def __init__(self, size, maxdim=1, sublevel=True, complex="freudenthal", alg='hom'):
         width, height = size
         tmpcomplex = None
         if complex == "freudenthal":
@@ -152,7 +159,7 @@ class LevelSetLayer2D(LevelSetLayer):
             tmpcomplex = init_grid_2d(width, height)
         elif complex == "delaunay":
             tmpcomplex = init_tri_complex(width, height)
-        super(LevelSetLayer2D, self).__init__(tmpcomplex, maxdim=maxdim, sublevel=sublevel)
+        super(LevelSetLayer2D, self).__init__(tmpcomplex, maxdim=maxdim, sublevel=sublevel, alg=alg)
         self.size = size
 
 
@@ -177,11 +184,15 @@ class LevelSetLayer1D(LevelSetLayer):
     Parameters:
         size : number of features
         sublevel : True=sublevel persistence, False=superlevel persistence
+        alg : algorithm
+            'hom' = homology (default)
+            'cohom' = cohomology
     only returns H0
     """
-    def __init__(self, size, sublevel=True):
+    def __init__(self, size, sublevel=True, alg='hom'):
         super(LevelSetLayer1D, self).__init__(
             init_line_complex(size),
             maxdim=0,
-            sublevel=sublevel
+            sublevel=sublevel,
+            alg=alg
             )
