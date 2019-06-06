@@ -1,4 +1,7 @@
 language: python
+python:
+  - "2.7"
+  - "3.6"
 matrix:
   include:
     # works on Precise and Trusty
@@ -24,9 +27,6 @@ matrix:
       env:
          - CC=gcc-5
          - CXX=g++-5"
-python:
-  - "2.7"
-  - "3.6"
 # command to install dependencies
 before_install:
     - eval "${MATRIX_EVAL}"
