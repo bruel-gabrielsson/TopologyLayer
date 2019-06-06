@@ -3,9 +3,7 @@ matrix:
   include:
     # works on Precise and Trusty
     - os: linux
-      python:
-        - "2.7"
-        - "3.6"
+      python: "3.6"
       addons:
         apt:
           sources:
@@ -18,9 +16,7 @@ matrix:
 
     # works on Precise and Trusty
     - os: linux
-      python:
-        - "2.7"
-        - "3.6"
+      python: "3.6"
       addons:
         apt:
           sources:
