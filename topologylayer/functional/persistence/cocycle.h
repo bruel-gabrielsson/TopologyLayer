@@ -19,8 +19,8 @@ class Cocycle{
 		Cocycle() : index(-1){}
 
 		// initializations
-		Cocycle(int x) : index(x) , cochain(x) {}
-		Cocycle(int x, std::vector<int> y) :  index(x) , cochain(y) {}
+		Cocycle(size_t x) : index(x) , cochain((int) x) {}
+		Cocycle(size_t x, std::vector<int> y) :  index(x) , cochain(y) {}
 
 		// for debug purposes
 		void insert(int x);
