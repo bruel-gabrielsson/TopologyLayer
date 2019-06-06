@@ -1,5 +1,7 @@
 # TopologyLayer
 
+Build Status: [![Build Status](https://travis-ci.com/bruel-gabrielsson/TopologyLayer.svg?branch=master)](https://travis-ci.com/bruel-gabrielsson/TopologyLayer)
+
 This repository contains a Python package that implements PyTorch-compatible persistent homology layers, as well as featurization of the output.
 
 For an introduction to this topic, see the preprint **A Topology Layer for Machine Learning**, [arxiv:1905.12200](https://arxiv.org/abs/1905.12200)
