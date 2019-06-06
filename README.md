@@ -271,7 +271,7 @@ dgms, issublevelset = layer(x)
 
 ### Persistence Backends
 
-There are several available algorithms for computing persistence, which can be chosen by setting the `alg` keyword in all layers.
+There are several available algorithms for computing persistence, which can be chosen by setting the `alg` keyword in any layer.
 * `'hom'` (default) will run the standard reduction algorithm
 * `'hom2'` will run the homology reduction algorithm, but will attempt to minimize nonzeros in a heuristic way
 * `'cohom'` will run the cohomology algorithm
@@ -280,7 +280,7 @@ There are several available algorithms for computing persistence, which can be c
 layer = LevelSetLayer1D(size=10, sublevel=False, alg='cohom')
 ```
 
-Different algorithms may give better performance, depending on the application, although `'hom'` currently performs fastest on some [simple benchmarks](examples/cpp/alg_comparison.py).
+Different algorithms may give better performance depending on the application, although `'hom'` currently performs fastest on some [simple benchmarks](examples/cpp/alg_comparison.py).
 
 ## Featurization Layers
 Persistence diagrams are hard to work with directly in machine learning.  We implement some easy to work with featurizations.
