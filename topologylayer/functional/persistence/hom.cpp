@@ -19,13 +19,14 @@ INPUTS:
 	MAXDIM - maximum homology dimension
 OUTPUTS: boundary matrix in List of Lists format.
 */
-std::vector<SparseF2Vec<int>> sorted_boundary(SimplicialComplex &X) {
+std::vector<SparseF2Vec<int>> sorted_boundary(SimplicialComplex &X, size_t MAXDIM) {
 	// empty boundary matrix
 	std::vector<SparseF2Vec<int>> B;
 	// build boundary in sorted order using filtration_perm
 	// should also use filtration_perm to permute nzs in rows of columns
 	std::vector<int> row_inds; // row indices for column
 	for (size_t j : X.filtration_perm ) {
+		if (X.dim(j) > MAXDIM+1) { continue; }
 		row_inds.clear(); // clear out column
 		// go through non-zeros in boundary
 		for (auto i : X.bdr[j].cochain.nzinds) {
@@ -67,6 +68,40 @@ void homology_reduction_alg(std::vector<SparseF2Vec<int>> &B, std::map<int, int>
 	return;
 }
 
+/*
+Function to reduce boundary matrix.
+Tries to minimize nnz by continuing to reduce past pivot
+INPUT:
+	B - boundary matrix
+	pivot_to_col - map from pivot to column
+OUTPUT:
+	none - inputs are modified in-place.
+*/
+void homology_reduction_alg2(std::vector<SparseF2Vec<int>> &B, std::map<int, int> &pivot_to_col) {
+	// loop over columns of boundary matrix
+	for (size_t j = 0; j < B.size(); j++) {
+		// if nnz = 0, the reduction is complete
+		size_t offset = 0; // position from last
+		while (B[j].nnz() > offset) {
+			int piv = B[j].from_end(offset);
+			if (pivot_to_col.count(piv) > 0) {
+				int k = pivot_to_col[piv];
+				// there is a column with that pivot
+				B[j].add(B[k]);
+			} else {
+				// there is no column with that pivot
+
+				// see if we've found new pivot
+				if (offset == 0) {pivot_to_col[piv] = j;}
+
+				// increase offset
+				offset++;
+			}
+		} // end column reduction
+	} // end for loop
+	return;
+}
+
 
 /*
 	Standard reduction algorithm on simplicial complex.
@@ -74,10 +109,12 @@ void homology_reduction_alg(std::vector<SparseF2Vec<int>> &B, std::map<int, int>
 		X - simplicial complex
 			IMPORTANT: assumes that X has been initialized, and filtration has been extended
 		MAXDIM - maximum homology dimension
+		alg_opt - 0 - standard reduction algorithm
+							1 - nz minimizing reduction algorithm
 	OUTPUTS: vector of tensors - t
 	 t[k] is float32 tensor with barcode for dimension k
 */
-std::vector<torch::Tensor> persistence_forward_hom(SimplicialComplex &X, size_t MAXDIM) {
+std::vector<torch::Tensor> persistence_forward_hom(SimplicialComplex &X, size_t MAXDIM, size_t alg_opt) {
 
    // produce sort permutation on X
    X.sortedOrder();
@@ -95,15 +132,18 @@ std::vector<torch::Tensor> persistence_forward_hom(SimplicialComplex &X, size_t 
 	 }
 
 	 // produce boundary matrix
-	 std::vector<SparseF2Vec<int>> B = sorted_boundary(X);
-	 // for (size_t j = 0; j < B.size(); j++) {
-		//  py::print(j);
-		//  B[j].print();
-	 // }
+	 std::vector<SparseF2Vec<int>> B = sorted_boundary(X, MAXDIM);
 
 	 // run standard reduction algorithm
 	 std::map<int, int> pivot_to_col;
-	 homology_reduction_alg(B, pivot_to_col);
+	 if (alg_opt == 0) {
+		 // standard reduction algorithm
+		 homology_reduction_alg(B, pivot_to_col);
+	 } else {
+		 // modified reduction algorithm
+		 homology_reduction_alg2(B, pivot_to_col);
+	 }
+
 
 	 // keep track of how many pairs we've put in diagram
 	 std::vector<size_t> nbars(MAXDIM+1);

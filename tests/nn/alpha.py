@@ -10,7 +10,7 @@ class AlphaTest(unittest.TestCase):
         from topologylayer.nn import AlphaLayer
 
         # superlevel set
-        for alg in ['hom', 'cohom']:
+        for alg in ['hom', 'hom2', 'cohom']:
             layer = AlphaLayer(maxdim=1, alg=alg)
             x = torch.tensor([[1, 1], [1,-1], [-1,-1], [-1,1]], dtype=torch.float).requires_grad_(True)
 

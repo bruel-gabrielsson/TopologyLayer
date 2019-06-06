@@ -104,12 +104,19 @@ class SparseF2Vec{
 			py::print(nzinds);
 		}
 
+		// return number of non-zeros
 		size_t nnz() {
 			return nzinds.size();
 		}
 
+		// return last nonzero index
 		T last() {
 			return nzinds.back();
+		}
+
+		// return offset element from last
+		T from_end(size_t offset) {
+			return nzinds.at(nzinds.size() - 1 - offset);
 		}
 
 };

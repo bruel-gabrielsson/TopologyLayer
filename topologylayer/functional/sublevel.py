@@ -3,7 +3,7 @@ from __future__ import print_function
 import torch
 
 from torch.autograd import Variable, Function
-from .persistence import SimplicialComplex, persistenceForward, persistenceBackward, persistenceForwardHom
+from .persistence import SimplicialComplex, persistenceForwardCohom, persistenceBackward, persistenceForwardHom
 
 class SubLevelSetDiagram(Function):
     """
@@ -14,6 +14,7 @@ class SubLevelSetDiagram(Function):
         maxdim - maximum homology dimension
         alg - algorithm
             'hom' = homology (default)
+            'hom2' = nz suppressing homology variant
             'cohom' = cohomology
     """
     @staticmethod
@@ -22,9 +23,11 @@ class SubLevelSetDiagram(Function):
         f = f.view(-1)
         X.extendFloat(f)
         if alg == 'hom':
-            ret = persistenceForwardHom(X, maxdim)
+            ret = persistenceForwardHom(X, maxdim, 0)
+        elif alg == 'hom2':
+            ret = persistenceForwardHom(X, maxdim, 1)
         elif alg == 'cohom':
-            ret = persistenceForward(X, maxdim)
+            ret = persistenceForwardCohom(X, maxdim)
         ctx.X = X
         return tuple(ret)
 

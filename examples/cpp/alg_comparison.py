@@ -21,7 +21,7 @@ dgm, issublevel = layer1(y)
 p = sum_finite(dgm[0])
 p.backward()
 
-algs = ['hom', 'cohom']
+algs = ['hom', 'hom2', 'cohom']
 
 tcs = {}
 tfs = {}

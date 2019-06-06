@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 from torch.autograd import Variable, Function
-from .persistence import SimplicialComplex, persistenceForward, persistenceBackwardFlag, persistenceForwardHom
+from .persistence import SimplicialComplex, persistenceForwardCohom, persistenceBackwardFlag, persistenceForwardHom
 
 class FlagDiagram(Function):
     """
@@ -13,15 +13,18 @@ class FlagDiagram(Function):
         maxdim - maximum homology dimension
         alg - algorithm
             'hom' = homology (default)
+            'hom2' = nz suppressing homology variant
             'cohom' = cohomology
     """
     @staticmethod
     def forward(ctx, X, y, maxdim, alg='hom'):
         X.extendFlag(y)
         if alg == 'hom':
-            ret = persistenceForwardHom(X, maxdim)
+            ret = persistenceForwardHom(X, maxdim, 0)
+        elif alg == 'hom2':
+            ret = persistenceForwardHom(X, maxdim, 1)
         elif alg == 'cohom':
-            ret = persistenceForward(X, maxdim)
+            ret = persistenceForwardCohom(X, maxdim)
         ctx.X = X
         ctx.save_for_backward(y)
         return tuple(ret)

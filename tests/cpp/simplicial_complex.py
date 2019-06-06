@@ -1,6 +1,6 @@
 import unittest
 
-from topologylayer.functional.persistence import SimplicialComplex, persistenceForward
+from topologylayer.functional.persistence import SimplicialComplex, persistenceForwardCohom
 from topologylayer.util.process import remove_zero_bars
 import torch
 import numpy as np
@@ -46,7 +46,7 @@ class BasicLevelset(unittest.TestCase):
         s.extendFloat(f)
 
         # compute persistence with MAXDIM=1
-        ret = persistenceForward(s, 1)
+        ret = persistenceForwardCohom(s, 1)
 
         self.assertEqual(
             torch.all(torch.eq(remove_zero_bars(ret[0]), torch.tensor([[0., np.inf]]))),

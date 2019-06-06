@@ -1,5 +1,5 @@
 from __future__ import print_function
-from topologylayer.functional.cohom_cpp import SimplicialComplex, persistenceForward
+from topologylayer.functional.persistence import SimplicialComplex, persistenceForwardCohom
 from topologylayer.util.process import remove_zero_bars
 import torch
 
@@ -43,7 +43,7 @@ f = torch.Tensor([2., 0., 0., 0., 0.])
 s.extendFloat(f)
 
 # compute persistence with MAXDIM=1
-ret = persistenceForward(s, 1)
+ret = persistenceForwardCohom(s, 1)
 
 for k in range(2):
     print("dimension %d bars" % k)
