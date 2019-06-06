@@ -271,7 +271,7 @@ dgms, issublevelset = layer(x)
 
 ### Persistence Backends
 
-There are several available algorithms for computing persistence available, which can be chosen by setting the `alg` keyword in all layers.
+There are several available algorithms for computing persistence, which can be chosen by setting the `alg` keyword in all layers.
 * `'hom'` (default) will run the standard reduction algorithm
 * `'hom2'` will run the homology reduction algorithm, but will attempt to minimize nonzeros in a heuristic way
 * `'cohom'` will run the cohomology algorithm
