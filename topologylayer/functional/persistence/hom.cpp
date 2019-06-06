@@ -26,7 +26,7 @@ std::vector<SparseF2Vec<int>> sorted_boundary(SimplicialComplex &X, size_t MAXDI
 	// should also use filtration_perm to permute nzs in rows of columns
 	std::vector<int> row_inds; // row indices for column
 	for (size_t j : X.filtration_perm ) {
-		if (X.dim(j) > MAXDIM+1) { continue; }
+		//if (X.dim(j) > MAXDIM+2) { continue; }
 		row_inds.clear(); // clear out column
 		// go through non-zeros in boundary
 		for (auto i : X.bdr[j].cochain.nzinds) {

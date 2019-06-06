@@ -116,7 +116,7 @@ class SparseF2Vec{
 
 		// return offset element from last
 		T from_end(size_t offset) {
-			return nzinds.at(nzinds.size() - 1 - offset);
+			return nzinds[nzinds.size() - 1 - offset];
 		}
 
 };
