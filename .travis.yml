@@ -10,7 +10,8 @@ matrix:
           packages:
             - g++-4.9
       env:
-         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+         - CC=gcc-4.9
+         - CXX=g++-4.9"
 
     # works on Precise and Trusty
     - os: linux
@@ -21,7 +22,8 @@ matrix:
           packages:
             - g++-5
       env:
-         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+         - CC=gcc-5
+         - CXX=g++-5"
 python:
   - "2.7"
   - "3.6"
