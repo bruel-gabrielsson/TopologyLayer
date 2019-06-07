@@ -1,9 +1,38 @@
 language: python
-python:
-  - "2.7"
-  - "3.6"
+matrix:
+  include:
+    # works on Precise and Trusty
+    - os: linux
+      dist: trusty
+      python: "3.6"
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
+      env:
+         - CC=gcc-4.9
+         - CXX=g++-4.9"
+
+    # works on Precise and Trusty
+    - os: linux
+      dist: trusty
+      python: "2.7"
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
+      env:
+         - CC=gcc-4.9
+         - CXX=g++-4.9"
 # command to install dependencies
+before_install:
+    - eval "${MATRIX_EVAL}"
 install:
+  - pip install --upgrade pip
   - pip install -r requirements.txt
   - python setup.py install
 # tests
