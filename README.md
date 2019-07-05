@@ -364,6 +364,8 @@ X.append([0,1,2])
 ```
 __Warning:__ there are currently no checks to make sure a `SimplicialComplex` does not contain duplicate simplices, or that all faces are included.  Thus, one should be very careful to add all faces and do so exactly once.
 
+__Warning:__ 0-simplices (vertices) are assumed to start with `[0]` and end at `[n]` where `n` is the total number of vertices.  You may run into issues if you use a different set of labels.
+
 __Warning:__ the persistence computation currently assumes that the complex is acyclic at the end of the filtration in order to precompute the number of barcode pairs.
 
 
