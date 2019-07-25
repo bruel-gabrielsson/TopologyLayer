@@ -21,7 +21,9 @@ class SubLevelSetDiagram(Function):
     def forward(ctx, X, f, maxdim, alg='hom'):
         ctx.retshape = f.shape
         f = f.view(-1)
-        X.extendFloat(f)
+        device = f.device
+        ctx.device = device
+        X.extendFloat(f.cpu())
         if alg == 'hom':
             ret = persistenceForwardHom(X, maxdim, 0)
         elif alg == 'hom2':
@@ -29,13 +31,15 @@ class SubLevelSetDiagram(Function):
         elif alg == 'cohom':
             ret = persistenceForwardCohom(X, maxdim)
         ctx.X = X
+        ret = [r.to(device) for r in ret]
         return tuple(ret)
 
     @staticmethod
     def backward(ctx, *grad_dgms):
         # print(grad_dgms)
         X = ctx.X
+        device = ctx.device
         retshape = ctx.retshape
-        grad_ret = list(grad_dgms)
+        grad_ret = [gd.cpu() for gd in grad_dgms]
         grad_f = persistenceBackward(X, grad_ret)
-        return None, grad_f.view(retshape), None, None
+        return None, grad_f.view(retshape).to(device), None, None
