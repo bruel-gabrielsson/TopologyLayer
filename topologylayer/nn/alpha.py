@@ -55,7 +55,7 @@ class AlphaLayer(nn.Module):
         self.alg = alg
 
     def forward(self, x):
-        xnp = x.data.numpy()
+        xnp = x.cpu().detach().numpy()
         complex = None
         if xnp.shape[1] == 1:
             xnp = xnp.flatten()

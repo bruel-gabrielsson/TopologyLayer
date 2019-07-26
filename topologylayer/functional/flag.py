@@ -18,7 +18,10 @@ class FlagDiagram(Function):
     """
     @staticmethod
     def forward(ctx, X, y, maxdim, alg='hom'):
-        X.extendFlag(y)
+        device = y.device
+        ctx.device = device
+        ycpu = y.cpu()
+        X.extendFlag(ycpu)
         if alg == 'hom':
             ret = persistenceForwardHom(X, maxdim, 0)
         elif alg == 'hom2':
@@ -26,14 +29,16 @@ class FlagDiagram(Function):
         elif alg == 'cohom':
             ret = persistenceForwardCohom(X, maxdim)
         ctx.X = X
-        ctx.save_for_backward(y)
+        ctx.save_for_backward(ycpu)
+        ret = [r.to(device) for r in ret]
         return tuple(ret)
 
     @staticmethod
     def backward(ctx, *grad_dgms):
         # print(grad_dgms)
         X = ctx.X
-        y, = ctx.saved_tensors
-        grad_ret = list(grad_dgms)
-        grad_y = persistenceBackwardFlag(X, y, grad_ret)
-        return None, grad_y, None, None
+        device = ctx.device
+        ycpu, = ctx.saved_tensors
+        grad_ret = [gd.cpu() for gd in grad_dgms]
+        grad_y = persistenceBackwardFlag(X, ycpu, grad_ret)
+        return None, grad_y.to(device), None, None
