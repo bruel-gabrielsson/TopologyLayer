@@ -78,6 +78,7 @@ Dependencies:
 * NumPy
 * SciPy
 * PyTorch 1.0+
+* C++14 compiler
 
 ## Installation using pip
 Assuming you have the listed dependencies and pip, you should be able to install.
