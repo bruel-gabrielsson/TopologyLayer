@@ -19,7 +19,7 @@ setup(name='topologylayer',
                         'topologylayer/functional/persistence/complex.cpp',
                         'topologylayer/functional/persistence/cocycle.cpp'],
                         include_dirs=[include_dir],
-                        extra_compile_args=extra['cxx']
+                        extra_compile_args=extra{"cxx": ["-std=c++14"]},
                         )
         ],
         cmdclass={'build_ext': BuildExtension},
