@@ -1,5 +1,23 @@
 # TopologyLayer
 
+[Rickard Brüel Gabrielsson](http://bruel.org/), Bradley J. Nelson, Anjan Dwaraknath, Primoz Skraba, Leonidas J. Guibas, and Gunnar Carlsson
+[[arXiv](https://arxiv.org/abs/1905.12200)]
+
+AISTATS 2020
+
+### Citation
+
+```
+@misc{brüelgabrielsson2020topology,
+      title={A Topology Layer for Machine Learning}, 
+      author={Rickard Brüel-Gabrielsson and Bradley J. Nelson and Anjan Dwaraknath and Primoz Skraba and Leonidas J. Guibas and Gunnar Carlsson},
+      year={2020},
+      eprint={1905.12200},
+}
+```
+
+### Introduction
+
 Build Status: [![Build Status](https://travis-ci.com/bruel-gabrielsson/TopologyLayer.svg?branch=master)](https://travis-ci.com/bruel-gabrielsson/TopologyLayer)
 
 This repository contains a Python package that implements PyTorch-compatible persistent homology layers, as well as featurization of the output.
